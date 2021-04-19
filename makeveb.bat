@@ -1,13 +1,14 @@
 @REM Author:        Johnny Appleseed <liuzhaohui@inspur.com>
-@REM Last Update:   2021-04-15
+@REM Last Update:   2021-04-19
 
 @setlocal
-@set version=v1.0.0
+@set version=v1.0.1
 @title makeveb %version%
 
-@if "%~1" == "" (
-    @set /p "recipe=Enter recipe (e.g. rebuild, build, clean): "
-) else @set "recipe=%~1"
+@set "recipe=%~1"
+@set "logflag=%~2"
+
+@if "%recipe%" == "" @set /p "recipe=Enter recipe (rebuild, all, clean): "
 
 @if "%recipe%" == "" (
     @echo makeveb: error: no recipe provided
@@ -15,11 +16,15 @@
     exit /b 1
 )
 
-@if "%~2" == "" (
-    @set "logflag=1>build.log 2>&1"
+@if "%logflag%" == "" (
+    @if "%recipe%" == "rebuild" (
+        @set "logflag=1>build.log 2>&1"
+    ) else if "%recipe%" == "all" (
+        @set "logflag=1>build.log 2>&1"
+    )
 ) else (
-    if "%~2" == "nolog" (@set "logflag=") else (
-        @echo makeveb: error: unexpected argument [%~2]
+    if "%logflag%" == "nolog" (@set "logflag=") else (
+        @echo makeveb: error: unexpected argument [%logflag%]
         @pause
         exit /b 2
     )
@@ -34,17 +39,17 @@
 
 @title makeveb %version% - %recipe% - %~dp0
 
-@if "%recipe%" == "build" @set "recipe="
-
 @(%TOOLS_DIR%\make %recipe%)%logflag%
 
 @echo;
 @if %errorlevel% EQU 0 (
-    @title makeveb finished
-    @echo makeveb: finished successfully
+    @title finished: makeveb %version% - %recipe% - %~dp0
+    @echo makeveb: finished successfully: [%recipe%] in %~dp0
 ) else (
-    @title rebuilding failed
-    @echo makeveb: failed: %errorlevel%. See build.log
+    @title failed: makeveb %version% - %recipe% - %~dp0
+    @echo makeveb: failed to make [%recipe%] in %~dp0
+    @echo error: %errorlevel%
+    @if not "%logflag%" == "" @echo see build.log
 )
 
 @pause

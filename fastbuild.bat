@@ -1,1 +1,1 @@
-@makeveb build nolog
+@makeveb all nolog
