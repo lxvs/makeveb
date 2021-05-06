@@ -1,8 +1,8 @@
 @REM Author:        Johnny Appleseed <liuzhaohui@inspur.com>
-@REM Last Update:   2021-04-19
+@REM Last Update:   2021-05-06
 
 @setlocal
-@set version=v1.0.1
+@set version=v1.0.2
 @title makeveb %version%
 
 @set "recipe=%~1"
@@ -11,7 +11,7 @@
 @if "%recipe%" == "" @set /p "recipe=Enter recipe (rebuild, all, clean): "
 
 @if "%recipe%" == "" (
-    @echo makeveb: error: no recipe provided
+    @echo MAKEVEB: ERROR: no recipe provided
     @pause
     exit /b 1
 )
@@ -24,18 +24,22 @@
     )
 ) else (
     if "%logflag%" == "nolog" (@set "logflag=") else (
-        @echo makeveb: error: unexpected argument [%logflag%]
+        @echo MAKEVEB: ERROR: unexpected argument [%logflag%]
         @pause
         exit /b 2
     )
 )
 
-@if not defined TOOLS_DIR @set TOOLS_DIR=C:\BuildTools_V37
-@if not defined EWDK_DIR @set EWDK_DIR=C:\EWDK_1703
+@if not defined TOOLS_DIR @set "TOOLS_DIR=C:\BuildTools_V37"
+@if not defined EWDK_DIR @set "EWDK_DIR=C:\EWDK_1703"
+
+@echo MAKEVEB: current settings:
+@echo          TOOLS_DIR: %TOOLS_DIR%
+@echo          EWDK_DIR:  %EWDK_DIR%
 
 @pushd %~dp0
 
-@echo makeveb: using recipe [%recipe%] to make %~dp0
+@echo MAKEVEB: using recipe [%recipe%] to make %~dp0
 
 @title makeveb %version% - %recipe% - %~dp0
 
@@ -44,11 +48,11 @@
 @echo;
 @if %errorlevel% EQU 0 (
     @title finished: makeveb %version% - %recipe% - %~dp0
-    @echo makeveb: finished successfully: [%recipe%] in %~dp0
+    @echo MAKEVEB: finished successfully: [%recipe%] in %~dp0
 ) else (
     @title failed: makeveb %version% - %recipe% - %~dp0
-    @echo makeveb: failed to make [%recipe%] in %~dp0
-    @echo error: %errorlevel%
+    @echo MAKEVEB: failed to make [%recipe%] in %~dp0
+    @echo error code: %errorlevel%
     @if not "%logflag%" == "" @echo see build.log
 )
 
