@@ -1,59 +1,177 @@
-@REM Author:        Johnny Appleseed <liuzhaohui@inspur.com>
-@REM Last Update:   2021-05-06
-
 @setlocal
-@set version=v1.0.2
+
+@set "DEFAULT_WORKDIR=%cd%"
+@set "DEFAULT_LOG=CON"
+@set "DEFAULT_LOG_FILE=build.log"
+@set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
+@set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
+@set "DEFAULT_PAUSE_WHEN=failed"
+
+@set "version=v2.0.0"
+@set "lupdate=2021-05-17"
 @title makeveb %version%
 
-@set "recipe=%~1"
-@set "logflag=%~2"
-
-@if "%recipe%" == "" @set /p "recipe=Enter recipe (rebuild, all, clean): "
-
-@if "%recipe%" == "" (
-    @echo MAKEVEB: ERROR: no recipe provided
-    @pause
-    exit /b 1
+@set "MV_target=%~1"
+@if "%MV_target:~0,1%" == "/" (
+    @set "MV_target="
+    @goto paramparse
 )
 
-@if "%logflag%" == "" (
-    @if "%recipe%" == "rebuild" (
-        @set "logflag=1>build.log 2>&1"
-    ) else if "%recipe%" == "all" (
-        @set "logflag=1>build.log 2>&1"
+@shift
+
+:paramparse
+@if "%~1" == "" goto endparamparse
+@set "param=%~1"
+@set "switch=%param:~1%"
+@if "%param:~0,1%" == "/" (
+    @if /i "%switch%" == "V" (
+        @set "veb=%~2"
+    ) else if /i "%switch%" == "W" (
+        @set "workdir=%~2"
+    ) else if /i "%switch%" == "L" (
+        @set "log=%~2"
+    ) else if /i "%switch%" == "T" (
+        @set "TOOLS_DIR=%~2"
+    ) else if /i "%switch%" == "E" (
+        @set "EWDK_DIR=%~2"
+    ) else if /i "%switch%" == "P" (
+        @set "pause_when=%~2"
+    ) else (
+        @>&2 echo makeveb: error: invalid switch [ %param% ]
+        @>&2 call:Help
+        exit /b 1
     )
+    @shift
+    @shift
+    @goto paramparse
 ) else (
-    if "%logflag%" == "nolog" (@set "logflag=") else (
-        @echo MAKEVEB: ERROR: unexpected argument [%logflag%]
-        @pause
+    if "%MV_target%" == "" (
+        @set "MV_target=%param%"
+        @shift
+        @goto paramparse
+    ) else (
+        @>&2 echo makeveb: error: invalid argument [%param%]
+        @>&2 call:HELP
         exit /b 2
     )
 )
+:endparamparse
 
-@if not defined TOOLS_DIR @set "TOOLS_DIR=C:\BuildTools_V37"
-@if not defined EWDK_DIR @set "EWDK_DIR=C:\EWDK_1703"
+@if not defined workdir @set "workdir=%DEFAULT_WORKDIR%"
+@if not defined DEFAULT_LOG @set "DEFAULT_LOG=CON"
+@if not defined log (
+    if defined DEFAULT_LOG_FILE (
+        if exist "%DEFAULT_LOG_FILE%" (
+            set "log=%DEFAULT_LOG%"
+        ) else (
+            set "log=%DEFAULT_LOG_FILE%"
+        )
+    ) else set "log=%DEFAULT_LOG%"
+)
 
-@echo MAKEVEB: current settings:
-@echo          TOOLS_DIR: %TOOLS_DIR%
-@echo          EWDK_DIR:  %EWDK_DIR%
+@if not defined TOOLS_DIR @set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
+@if not defined EWDK_DIR @set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
 
-@pushd %~dp0
+@if not exist %TOOLS_DIR% (
+    @>&2 echo makeveb: error: defined TOOLS_DIR does not exist.
+    @>&2 echo     TOOLS_DIR = [ %TOOLS_DIR% ]
+    exit /b 3
+)
+@if not exist %EWDK_DIR% (
+    @>&2 echo makeveb: error: defined EWDK_DIR does not exist.
+    @>&2 echo     EWDK_DIR = [ %EWDK_DIR% ]
+    exit /b 4
+)
+@if not defined pause_when @set "pause_when=%DEFAULT_PAUSE_WHEN%"
 
-@echo MAKEVEB: using recipe [%recipe%] to make %~dp0
+@echo;
+@echo   ==========================================================================
+@echo   ^| MAKEVEB %version%
+@echo   ^|     Johnny Appleseed ^<liuzhaohui@inspur.com^>
+@echo   ^|     Last Update:   %lupdate%
+@echo   ==========================================================================
+@echo   ^| Current settings:
+@echo   ^|     VEB:          %veb%
+@echo   ^|     workdir:      %workdir%
+@echo   ^|     log:          %log%
+@echo   ^|     TOOLS_DIR:    %TOOLS_DIR%
+@echo   ^|     EWDK_DIR:     %EWDK_DIR%
+@echo   ^|     pause_when:   %pause_when%
+@echo   ==========================================================================
+@echo;
 
-@title makeveb %version% - %recipe% - %~dp0
+@if "%MV_target%" == "" (
+    @if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
+    @title makeveb %version% Command Prompt
+    cmd /k
+    @exit /b
+)
 
-@(%TOOLS_DIR%\make %recipe%)%logflag%
+@if "%log%" == "CON" (
+    @set "logflag="
+) else (
+    @set "logflag=1>%log:^=^^% 2>&1"
+)
+
+@pushd %workdir%
+
+@echo MAKEVEB: making [%MV_target%]
+
+@title makeveb %version% - %MV_target%
+
+@%TOOLS_DIR%\make %MV_target% %logflag%
 
 @echo;
 @if %errorlevel% EQU 0 (
-    @title finished: makeveb %version% - %recipe% - %~dp0
-    @echo MAKEVEB: finished successfully: [%recipe%] in %~dp0
+    @title finished: makeveb %version% - %MV_target%
+    @echo MAKEVEB: finished successfully: [%MV_target%]
+    @if /i "%pause_when%" == "always" (
+        @pause
+    ) else if /i "%pause_when%" == "successful" (
+        @pause
+    )
 ) else (
-    @title failed: makeveb %version% - %recipe% - %~dp0
-    @echo MAKEVEB: failed to make [%recipe%] in %~dp0
-    @echo error code: %errorlevel%
-    @if not "%logflag%" == "" @echo see build.log
+    @title failed: makeveb %version% - %MV_target%
+    @>&2 echo MAKEVEB: failed to make [%MV_target%]
+    @>&2 echo error code: %errorlevel%
+    @if /i "%pause_when%" == "always" (
+        @pause
+    ) else if /i "%pause_when%" == "failed" (
+        @pause
+    )
 )
 
-@pause
+@exit /b
+
+:USAGE
+@echo MAKEVEB %version%
+@echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
+@echo     Last Update:   %lupdate%
+@echo;
+@echo USAGE:
+@echo
+@echo makeveb.bat [ ^<MV_target^> ]
+@echo             [ /V ^<VEB^> ]
+@echo             [ /W ^<workdir^> ]
+@echo             [ /L ^<log^> ]
+@echo             [ /T ^<TOOLS_DIR^> ]
+@echo             [ /E ^<EWDK_DIR^> ]
+@echo             [ /P ^<pause_when^>]
+@echo
+@echo ^<MV_target^>:  Target to make. If not specified, will enter command prompt.
+@echo ^<VEB^>:     Specify the veb file. Can be empty if there is only one.
+@echo ^<workdir^>: If not specified, will be current directory.
+@echo ^<log^>: CON: only print build log in console.
+@echo        NUL: do not print or write log to file.
+@echo        other valid filename: only write log to the specified file.
+@echo        If /L not specified, it will write to file build.log if there
+@echo        is no build.log existing. Otherwise, will print in console.
+@echo ^<pause_when^>:  Available options: always, never, successful, failed.
+@echo                Default is [always].
+@echo
+@echo EXAMPLES:
+@echo
+@echo makeveb rebuild /V Standard /W C:\exampleproj /L buildlog.txt
+@echo         /T C:\BuildTools_37 /E C:\EWDK_1703 /P failed
+@echo
+@echo makeveb sdl /L CON
