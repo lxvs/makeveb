@@ -88,7 +88,7 @@
 @echo   ==========================================================================
 @echo   ^| MAKEVEB %version%
 @echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
-@echo   ^| Last Update:   %lupdate%
+@echo   ^| Last Update: %lupdate%
 @echo   ==========================================================================
 @echo   ^| Current settings:
 @echo   ^|     VEB:          %VEB%
