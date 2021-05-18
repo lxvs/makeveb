@@ -7,13 +7,13 @@
 @set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 @set "DEFAULT_PAUSE_WHEN=failed"
 
-@set "version=v2.0.0"
-@set "lupdate=2021-05-17"
+@set "version=v2.0.1"
+@set "lupdate=2021-05-18"
 @title makeveb %version%
 
-@set "MV_target=%~1"
-@if "%MV_target:~0,1%" == "/" (
-    @set "MV_target="
+@set "make_target=%~1"
+@if "%make_target:~0,1%" == "/" (
+    @set "make_target="
     @goto paramparse
 )
 
@@ -38,20 +38,20 @@
         @set "pause_when=%~2"
     ) else (
         @>&2 echo makeveb: error: invalid switch [ %param% ]
-        @>&2 call:Help
+        @>&2 call:Usage
         exit /b 1
     )
     @shift
     @shift
     @goto paramparse
 ) else (
-    if "%MV_target%" == "" (
-        @set "MV_target=%param%"
+    if "%make_target%" == "" (
+        @set "make_target=%param%"
         @shift
         @goto paramparse
     ) else (
         @>&2 echo makeveb: error: invalid argument [%param%]
-        @>&2 call:HELP
+        @>&2 call:Usage
         exit /b 2
     )
 )
@@ -87,8 +87,8 @@
 @echo;
 @echo   ==========================================================================
 @echo   ^| MAKEVEB %version%
-@echo   ^|     Johnny Appleseed ^<liuzhaohui@inspur.com^>
-@echo   ^|     Last Update:   %lupdate%
+@echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
+@echo   ^| Last Update:   %lupdate%
 @echo   ==========================================================================
 @echo   ^| Current settings:
 @echo   ^|     VEB:          %veb%
@@ -100,7 +100,7 @@
 @echo   ==========================================================================
 @echo;
 
-@if "%MV_target%" == "" (
+@if "%make_target%" == "" (
     @if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
     @title makeveb %version% Command Prompt
     cmd /k
@@ -115,24 +115,24 @@
 
 @pushd %workdir%
 
-@echo MAKEVEB: making [%MV_target%]
+@echo MAKEVEB: making [%make_target%]
 
-@title makeveb %version% - %MV_target%
+@title makeveb %version% - %make_target%
 
-@%TOOLS_DIR%\make %MV_target% %logflag%
+@%TOOLS_DIR%\make %make_target% %logflag%
 
 @echo;
 @if %errorlevel% EQU 0 (
-    @title finished: makeveb %version% - %MV_target%
-    @echo MAKEVEB: finished successfully: [%MV_target%]
+    @title finished: makeveb %version% - %make_target%
+    @echo MAKEVEB: finished successfully: [%make_target%]
     @if /i "%pause_when%" == "always" (
         @pause
     ) else if /i "%pause_when%" == "successful" (
         @pause
     )
 ) else (
-    @title failed: makeveb %version% - %MV_target%
-    @>&2 echo MAKEVEB: failed to make [%MV_target%]
+    @title failed: makeveb %version% - %make_target%
+    @>&2 echo MAKEVEB: failed to make [%make_target%]
     @>&2 echo error code: %errorlevel%
     @if /i "%pause_when%" == "always" (
         @pause
@@ -143,35 +143,39 @@
 
 @exit /b
 
-:USAGE
-@echo MAKEVEB %version%
+:Usage
+@echo;
+@echo     MAKEVEB %version%
 @echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
 @echo     Last Update:   %lupdate%
 @echo;
 @echo USAGE:
-@echo
-@echo makeveb.bat [ ^<MV_target^> ]
+@echo;
+@echo makeveb.bat [ ^<make_target^> ]
 @echo             [ /V ^<VEB^> ]
+@echo             [ /M ^<VEB_BUILD_MODULE^> ]
 @echo             [ /W ^<workdir^> ]
 @echo             [ /L ^<log^> ]
 @echo             [ /T ^<TOOLS_DIR^> ]
 @echo             [ /E ^<EWDK_DIR^> ]
 @echo             [ /P ^<pause_when^>]
-@echo
-@echo ^<MV_target^>:  Target to make. If not specified, will enter command prompt.
-@echo ^<VEB^>:     Specify the veb file. Can be empty if there is only one.
+@echo;
+@echo ^<make_target^>:  Target to make. If not specified, will enter command prompt.
+@echo ^<VEB^>: Specify the veb file. Can be empty if there is only one.
+@echo ^<VEB_BUILD_MODULE^>: Specify the moudule^(s^) to build. If left empty, build all
+@echo                     modules.
 @echo ^<workdir^>: If not specified, will be current directory.
 @echo ^<log^>: CON: only print build log in console.
 @echo        NUL: do not print or write log to file.
 @echo        other valid filename: only write log to the specified file.
-@echo        If /L not specified, it will write to file build.log if there
-@echo        is no build.log existing. Otherwise, will print in console.
+@echo        If /L not specified, it will write to file build.log if there is no
+@echo        build.log existing. Otherwise, will print in console.
 @echo ^<pause_when^>:  Available options: always, never, successful, failed.
 @echo                Default is [always].
-@echo
+@echo;
 @echo EXAMPLES:
-@echo
+@echo;
 @echo makeveb rebuild /V Standard /W C:\exampleproj /L buildlog.txt
 @echo         /T C:\BuildTools_37 /E C:\EWDK_1703 /P failed
-@echo
+@echo;
 @echo makeveb sdl /L CON
