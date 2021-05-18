@@ -7,7 +7,7 @@
 @set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 @set "DEFAULT_PAUSE_WHEN=failed"
 
-@set "version=v2.0.1"
+@set "version=v2.0.2"
 @set "lupdate=2021-05-18"
 @title makeveb %version%
 
@@ -25,7 +25,7 @@
 @set "switch=%param:~1%"
 @if "%param:~0,1%" == "/" (
     @if /i "%switch%" == "V" (
-        @set "veb=%~2"
+        @set "VEB=%~2"
     ) else if /i "%switch%" == "W" (
         @set "workdir=%~2"
     ) else if /i "%switch%" == "L" (
@@ -91,7 +91,7 @@
 @echo   ^| Last Update:   %lupdate%
 @echo   ==========================================================================
 @echo   ^| Current settings:
-@echo   ^|     VEB:          %veb%
+@echo   ^|     VEB:          %VEB%
 @echo   ^|     workdir:      %workdir%
 @echo   ^|     log:          %log%
 @echo   ^|     TOOLS_DIR:    %TOOLS_DIR%
