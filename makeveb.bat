@@ -7,8 +7,8 @@
 @set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 @set "DEFAULT_PAUSE_WHEN=failed"
 
-@set "version=v2.0.2"
-@set "lupdate=2021-05-18"
+@set "version=v2.0.3"
+@set "lupdate=2021-05-19"
 @title makeveb %version%
 
 @set "make_target=%~1"
@@ -26,6 +26,8 @@
 @if "%param:~0,1%" == "/" (
     @if /i "%switch%" == "V" (
         @set "VEB=%~2"
+    ) else if /i "%switch%" == "M" (
+        @set "VEB_BUILD_MODULE=%~2"
     ) else if /i "%switch%" == "W" (
         @set "workdir=%~2"
     ) else if /i "%switch%" == "L" (
@@ -91,12 +93,13 @@
 @echo   ^| Last Update: %lupdate%
 @echo   ==========================================================================
 @echo   ^| Current settings:
-@echo   ^|     VEB:          %VEB%
-@echo   ^|     workdir:      %workdir%
-@echo   ^|     log:          %log%
-@echo   ^|     TOOLS_DIR:    %TOOLS_DIR%
-@echo   ^|     EWDK_DIR:     %EWDK_DIR%
-@echo   ^|     pause_when:   %pause_when%
+@echo   ^|     VEB:                %VEB%
+@echo   ^|     VEB_BUILD_MODULE:   %VEB_BUILD_MODULE%
+@echo   ^|     workdir:            %workdir%
+@echo   ^|     log:                %log%
+@echo   ^|     TOOLS_DIR:          %TOOLS_DIR%
+@echo   ^|     EWDK_DIR:           %EWDK_DIR%
+@echo   ^|     pause_when:         %pause_when%
 @echo   ==========================================================================
 @echo;
 
