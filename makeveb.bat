@@ -1,5 +1,7 @@
 @setlocal
 
+@set "DEFAULT_VEB=Standard"
+@set "DEFAULT_VEB_BUILD_MODULE="
 @set "DEFAULT_WORKDIR=%cd%"
 @set "DEFAULT_LOG=CON"
 @set "DEFAULT_LOG_FILE=build.log"
@@ -7,8 +9,8 @@
 @set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 @set "DEFAULT_PAUSE_WHEN=failed"
 
-@set "version=v2.0.3"
-@set "lupdate=2021-05-19"
+@set "version=v2.1.0"
+@set "lupdate=2021-05-28"
 @title makeveb %version%
 
 @set "make_target=%~1"
@@ -59,7 +61,17 @@
 )
 :endparamparse
 
+@if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
 @if not defined workdir @set "workdir=%DEFAULT_WORKDIR%"
+
+@if not defined VEB @set "VEB=%DEFAULT_VEB%"
+@if not exist "%workdir%\%VEB%.veb" (
+    @echo makeveb: WARNING: couldn't find %workdir%\%VEB%.veb
+    @set "VEB="
+)
+
+@if not defined VEB_BUILD_MODULE @set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
+
 @if not defined DEFAULT_LOG @set "DEFAULT_LOG=CON"
 @if not defined log (
     if defined DEFAULT_LOG_FILE (
