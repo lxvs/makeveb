@@ -1,79 +1,80 @@
-@setlocal
+@echo off
+setlocal
 
-@set "DEFAULT_VEB=Standard"
-@set "DEFAULT_VEB_BUILD_MODULE="
-@set "DEFAULT_WORKDIR=%cd%"
-@set "DEFAULT_LOG=CON"
-@set "DEFAULT_LOG_FILE=build.log"
-@set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
-@set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
-@set "DEFAULT_PAUSE_WHEN=failed"
+set "DEFAULT_VEB=Standard"
+set "DEFAULT_VEB_BUILD_MODULE="
+set "DEFAULT_WORKDIR=%cd%"
+set "DEFAULT_LOG=CON"
+set "DEFAULT_LOG_FILE=build.log"
+set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
+set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
+set "DEFAULT_PAUSE_WHEN=failed"
 
-@set "version=v2.1.0"
-@set "lupdate=2021-05-28"
-@title makeveb %version%
+set "version=v2.1.1"
+set "lupdate=2021-05-28"
+title makeveb %version%
 
-@set "make_target=%~1"
-@if "%make_target:~0,1%" == "/" (
-    @set "make_target="
-    @goto paramparse
+set "make_target=%~1"
+if "%make_target:~0,1%" == "/" (
+    set "make_target="
+    goto paramparse
 )
 
-@shift
+shift
 
 :paramparse
-@if "%~1" == "" goto endparamparse
-@set "param=%~1"
-@set "switch=%param:~1%"
-@if "%param:~0,1%" == "/" (
-    @if /i "%switch%" == "V" (
-        @set "VEB=%~2"
+if "%~1" == "" goto endparamparse
+set "param=%~1"
+set "switch=%param:~1%"
+if "%param:~0,1%" == "/" (
+    if /i "%switch%" == "V" (
+        set "VEB=%~2"
     ) else if /i "%switch%" == "M" (
-        @set "VEB_BUILD_MODULE=%~2"
+        set "VEB_BUILD_MODULE=%~2"
     ) else if /i "%switch%" == "W" (
-        @set "workdir=%~2"
+        set "workdir=%~2"
     ) else if /i "%switch%" == "L" (
-        @set "log=%~2"
+        set "log=%~2"
     ) else if /i "%switch%" == "T" (
-        @set "TOOLS_DIR=%~2"
+        set "TOOLS_DIR=%~2"
     ) else if /i "%switch%" == "E" (
-        @set "EWDK_DIR=%~2"
+        set "EWDK_DIR=%~2"
     ) else if /i "%switch%" == "P" (
-        @set "pause_when=%~2"
+        set "pause_when=%~2"
     ) else (
-        @>&2 echo makeveb: error: invalid switch [ %param% ]
-        @>&2 call:Usage
+        >&2 echo makeveb: error: invalid switch [ %param% ]
+        >&2 call:Usage
         exit /b 1
     )
-    @shift
-    @shift
-    @goto paramparse
+    shift
+    shift
+    goto paramparse
 ) else (
     if "%make_target%" == "" (
-        @set "make_target=%param%"
-        @shift
-        @goto paramparse
+        set "make_target=%param%"
+        shift
+        goto paramparse
     ) else (
-        @>&2 echo makeveb: error: invalid argument [%param%]
-        @>&2 call:Usage
+        >&2 echo makeveb: error: invalid argument [%param%]
+        >&2 call:Usage
         exit /b 2
     )
 )
 :endparamparse
 
-@if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
-@if not defined workdir @set "workdir=%DEFAULT_WORKDIR%"
+if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
+if not defined workdir set "workdir=%DEFAULT_WORKDIR%"
 
-@if not defined VEB @set "VEB=%DEFAULT_VEB%"
-@if not exist "%workdir%\%VEB%.veb" (
+if not defined VEB set "VEB=%DEFAULT_VEB%"
+if not exist "%workdir%\%VEB%.veb" (
     @echo makeveb: WARNING: couldn't find %workdir%\%VEB%.veb
-    @set "VEB="
+    set "VEB="
 )
 
-@if not defined VEB_BUILD_MODULE @set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
+if not defined VEB_BUILD_MODULE set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
 
-@if not defined DEFAULT_LOG @set "DEFAULT_LOG=CON"
-@if not defined log (
+if not defined DEFAULT_LOG set "DEFAULT_LOG=CON"
+if not defined log (
     if defined DEFAULT_LOG_FILE (
         if exist "%DEFAULT_LOG_FILE%" (
             set "log=%DEFAULT_LOG%"
@@ -83,20 +84,20 @@
     ) else set "log=%DEFAULT_LOG%"
 )
 
-@if not defined TOOLS_DIR @set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
-@if not defined EWDK_DIR @set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
+if not defined TOOLS_DIR set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
+if not defined EWDK_DIR set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
 
-@if not exist %TOOLS_DIR% (
-    @>&2 echo makeveb: error: defined TOOLS_DIR does not exist.
-    @>&2 echo     TOOLS_DIR = [ %TOOLS_DIR% ]
+if not exist %TOOLS_DIR% (
+    >&2 echo makeveb: error: defined TOOLS_DIR does not exist.
+    >&2 echo     TOOLS_DIR = [ %TOOLS_DIR% ]
     exit /b 3
 )
-@if not exist %EWDK_DIR% (
-    @>&2 echo makeveb: error: defined EWDK_DIR does not exist.
-    @>&2 echo     EWDK_DIR = [ %EWDK_DIR% ]
+if not exist %EWDK_DIR% (
+    >&2 echo makeveb: error: defined EWDK_DIR does not exist.
+    >&2 echo     EWDK_DIR = [ %EWDK_DIR% ]
     exit /b 4
 )
-@if not defined pause_when @set "pause_when=%DEFAULT_PAUSE_WHEN%"
+if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
 
 @echo;
 @echo   ==========================================================================
@@ -115,48 +116,48 @@
 @echo   ==========================================================================
 @echo;
 
-@if "%make_target%" == "" (
-    @if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
-    @title makeveb %version% Command Prompt
+if "%make_target%" == "" (
+    if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
+    title makeveb %version% Command Prompt
     cmd /k
-    @exit /b
+    exit /b
 )
 
-@if "%log%" == "CON" (
-    @set "logflag="
+if "%log%" == "CON" (
+    set "logflag="
 ) else (
-    @set "logflag=1>%log:^=^^% 2>&1"
+    set "logflag=1>%log:^=^^% 2>&1"
 )
 
-@pushd %workdir%
+pushd %workdir%
 
 @echo MAKEVEB: making [%make_target%]
 
-@title makeveb %version% - %make_target%
+title makeveb %version% - %make_target%
 
-@%TOOLS_DIR%\make %make_target% %logflag%
+%TOOLS_DIR%\make %make_target% %logflag%
 
 @echo;
-@if %errorlevel% EQU 0 (
-    @title finished: makeveb %version% - %make_target%
+if %errorlevel% EQU 0 (
+    title finished: makeveb %version% - %make_target%
     @echo MAKEVEB: finished successfully: [%make_target%]
-    @if /i "%pause_when%" == "always" (
-        @pause
+    if /i "%pause_when%" == "always" (
+        pause
     ) else if /i "%pause_when%" == "successful" (
-        @pause
+        pause
     )
 ) else (
-    @title failed: makeveb %version% - %make_target%
-    @>&2 echo MAKEVEB: failed to make [%make_target%]
-    @>&2 echo error code: %errorlevel%
-    @if /i "%pause_when%" == "always" (
-        @pause
+    title failed: makeveb %version% - %make_target%
+    >&2 echo MAKEVEB: failed to make [%make_target%]
+    >&2 echo error code: %errorlevel%
+    if /i "%pause_when%" == "always" (
+        pause
     ) else if /i "%pause_when%" == "failed" (
-        @pause
+        pause
     )
 )
 
-@exit /b
+exit /b
 
 :Usage
 @echo;
