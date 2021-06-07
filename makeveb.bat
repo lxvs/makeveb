@@ -10,8 +10,8 @@ set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
 set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 set "DEFAULT_PAUSE_WHEN=failed"
 
-set "version=v2.1.1"
-set "lupdate=2021-05-28"
+set "version=v2.1.2"
+set "lupdate=2021-06-07"
 title makeveb %version%
 
 set "make_target=%~1"
@@ -123,7 +123,7 @@ if "%make_target%" == "" (
     exit /b
 )
 
-if "%log%" == "CON" (
+if /i "%log%" == "CON" (
     set "logflag="
 ) else (
     set "logflag=1>%log:^=^^% 2>&1"
