@@ -10,9 +10,15 @@ set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
 set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 set "DEFAULT_PAUSE_WHEN=failed"
 
-set "version=v2.1.2"
-set "lupdate=2021-06-07"
+set "version=v2.2.0"
+set "lupdate=2021-06-09"
 title makeveb %version%
+
+set "clrPreRed=[91m"
+set "clrPreGrn=[92m"
+set "clrPreYlw=[93m"
+
+set "clrSuffix=[0m"
 
 set "make_target=%~1"
 if "%make_target:~0,1%" == "/" (
@@ -116,10 +122,14 @@ if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
 @echo   ==========================================================================
 @echo;
 
+pushd %workdir%
+
 if "%make_target%" == "" (
     if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
     title makeveb %version% Command Prompt
+    prompt %clrPreGrn%MAKVEB$S%version%%clrSuffix%$S%clrPreYlw%$P%clrSuffix%$_$+$G$S
     cmd /k
+    popd
     exit /b
 )
 
@@ -128,8 +138,6 @@ if /i "%log%" == "CON" (
 ) else (
     set "logflag=1>%log:^=^^% 2>&1"
 )
-
-pushd %workdir%
 
 @echo MAKEVEB: making [%make_target%]
 
@@ -157,13 +165,14 @@ if %errorlevel% EQU 0 (
     )
 )
 
+popd
 exit /b
 
 :Usage
 @echo;
 @echo     MAKEVEB %version%
 @echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
-@echo     Last Update:   %lupdate%
+@echo     Last Update: %lupdate%
 @echo;
 @echo USAGE:
 @echo;
