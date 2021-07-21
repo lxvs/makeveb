@@ -10,8 +10,8 @@ set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
 set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 set "DEFAULT_PAUSE_WHEN=failed"
 
-set "version=v2.2.0"
-set "lupdate=2021-06-09"
+set "version=v2.3.0"
+set "lupdate=2021-07-21"
 title makeveb %version%
 
 set "clrPreRed=[91m"
@@ -123,6 +123,21 @@ if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
 @echo;
 
 pushd %workdir%
+
+setlocal EnableDelayedExpansion
+set "_path=%PATH%"
+set "_path=%_path: =#%"
+set "_path=%_path:;= %"
+set "_path=%_path:(=[%"
+set "_path=%_path:)=]%"
+for %%i in (%_path%) do (
+    echo %%i | findstr /i "\\git\\" > nul || set "newpath=!newpath!;%%i"
+)
+set "newpath=%newpath:#= %"
+set "newpath=%newpath:[=(%"
+set "newpath=%newpath:]=)%"
+set "PATH=%newpath:~1%"
+setlocal DisableDelayedExpansion
 
 if "%make_target%" == "" (
     if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
