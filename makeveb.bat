@@ -4,11 +4,11 @@ setlocal
 set "DEFAULT_VEB=Standard"
 set "DEFAULT_VEB_BUILD_MODULE="
 set "DEFAULT_WORKDIR=%cd%"
-set "DEFAULT_LOG=CON"
 set "DEFAULT_LOG_FILE=build.log"
-set "DEFAULT_TOOLS_DIR=C:\BuildTools_37_1"
+set "DEFAULT_TOOLS_DIR=%TOOLS_V37%"
 set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 set "DEFAULT_PAUSE_WHEN=failed"
+set "tee=%~dp0tee.exe"
 
 set "version=v2.3.0"
 set "lupdate=2021-07-21"
@@ -79,15 +79,12 @@ if not exist "%workdir%\%VEB%.veb" (
 
 if not defined VEB_BUILD_MODULE set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
 
-if not defined DEFAULT_LOG set "DEFAULT_LOG=CON"
 if not defined log (
     if defined DEFAULT_LOG_FILE (
-        if exist "%DEFAULT_LOG_FILE%" (
-            set "log=%DEFAULT_LOG%"
-        ) else (
-            set "log=%DEFAULT_LOG_FILE%"
-        )
-    ) else set "log=%DEFAULT_LOG%"
+        set "log=%DEFAULT_LOG_FILE%"
+    ) else (
+        set "log=build.log"
+    )
 )
 
 if not defined TOOLS_DIR set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
@@ -148,17 +145,11 @@ if "%make_target%" == "" (
     exit /b
 )
 
-if /i "%log%" == "CON" (
-    set "logflag="
-) else (
-    set "logflag=1>%log:^=^^% 2>&1"
-)
-
 @echo MAKEVEB: making [%make_target%]
 
 title makeveb %version% - %make_target%
 
-%TOOLS_DIR%\make %make_target% %logflag%
+%TOOLS_DIR%\make %make_target% | %tee% %log%
 
 @echo;
 if %errorlevel% EQU 0 (
@@ -205,11 +196,7 @@ exit /b
 @echo ^<VEB_BUILD_MODULE^>: Specify the moudule^(s^) to build. If left empty, build all
 @echo                     modules.
 @echo ^<workdir^>: If not specified, will be current directory.
-@echo ^<log^>: CON: only print build log in console.
-@echo        NUL: do not print or write log to file.
-@echo        other valid filename: only write log to the specified file.
-@echo        If /L not specified, it will write to file build.log if there is no
-@echo        build.log existing. Otherwise, will print in console.
+@echo ^<log^>: Build log filename, default is build.log
 @echo ^<pause_when^>:  Available options: always, never, successful, failed.
 @echo                Default is [always].
 @echo;
@@ -218,4 +205,4 @@ exit /b
 @echo makeveb rebuild /V Standard /W C:\exampleproj /L buildlog.txt
 @echo         /T C:\BuildTools_37 /E C:\EWDK_1703 /P failed
 @echo;
-@echo makeveb sdl /L CON
+@echo makeveb sdl
