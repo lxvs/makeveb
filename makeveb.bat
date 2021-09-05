@@ -10,8 +10,8 @@ set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 set "DEFAULT_PAUSE_WHEN=failed"
 set "tee=%~dp0tee.exe"
 
-set "version=v2.3.0"
-set "lupdate=2021-07-21"
+set "version=v2.4.0"
+set "lupdate=2021-09-05"
 title makeveb %version%
 
 set "clrPreRed=[91m"
