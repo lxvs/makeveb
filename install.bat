@@ -33,5 +33,5 @@ setx PATH "%batchfolder%;%UserPath%" 1>NUL || (
     exit /b 1
 )
 
-%SystemRoot%\System32\reg.exe add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\makeveb.exe" /ve /d "%batchfolder%\makeveb.bat" 1>nul
+%SystemRoot%\System32\reg.exe add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\makeveb.exe" /ve /d "%batchfolder%\makeveb.bat" /f 1>nul
 if %errorlevel% neq 0 pause
