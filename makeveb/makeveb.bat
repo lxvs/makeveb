@@ -8,7 +8,7 @@ set "DEFAULT_LOG_FILE=build.log"
 set "DEFAULT_TOOLS_DIR=%TOOLS_V37%"
 set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 set "DEFAULT_PAUSE_WHEN=failed"
-set "tee=%~dp0tee.exe"
+set "tee=%~dp0..\tee.exe"
 
 set "version=v2.4.0"
 set "lupdate=2021-09-05"
@@ -122,19 +122,20 @@ if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
 pushd %workdir%
 
 setlocal EnableDelayedExpansion
+set newpath=
 set "_path=%PATH%"
 set "_path=%_path: =#%"
 set "_path=%_path:;= %"
 set "_path=%_path:(=[%"
 set "_path=%_path:)=]%"
 for %%i in (%_path%) do (
-    echo %%i | findstr /i "\\git\\" > nul || set "newpath=!newpath!;%%i"
+    echo %%i | findstr /i /l "\git\" > nul || set "newpath=!newpath!;%%i"
 )
 set "newpath=%newpath:#= %"
 set "newpath=%newpath:[=(%"
 set "newpath=%newpath:]=)%"
 set "PATH=%newpath:~1%"
-setlocal DisableDelayedExpansion
+endlocal
 
 if "%make_target%" == "" (
     if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
