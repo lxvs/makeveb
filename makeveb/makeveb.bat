@@ -150,7 +150,7 @@ if "%make_target%" == "" (
 
 title makeveb %version% - %make_target%
 
-%TOOLS_DIR%\make %make_target% | %tee% %log%
+%TOOLS_DIR%\make %make_target% 2>&1 | %tee% %log%
 
 @echo;
 if %errorlevel% EQU 0 (
