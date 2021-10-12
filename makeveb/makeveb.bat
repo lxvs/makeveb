@@ -1,35 +1,46 @@
 @echo off
 setlocal
 
-set "DEFAULT_VEB=Standard"
-set "DEFAULT_VEB_BUILD_MODULE="
-set "DEFAULT_WORKDIR=%cd%"
-set "DEFAULT_LOG_FILE=build.log"
-set "DEFAULT_TOOLS_DIR=%TOOLS_V37%"
-set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
-set "DEFAULT_PAUSE_WHEN=failed"
-set "tee=%~dp0..\tee.exe"
+call:SetDefaults
+call:SetMetaInfo
+title makeveb %version%
+if "%~1" == "/?" goto Usage
+call:ParseArgs %* || exit /b
+call:AssignDefaults
+call:ConfigurationStatus
+call:ValidateDirs
+pushd "%workdir%"
+call:RemoveGitFromPath
+call:IfPrompt && exit /b
+call:BuildStart
+popd
+exit /b
 
+:SetDefaults
+if not defined DEFAULT_VEB set "DEFAULT_VEB=Standard.veb"
+if not defined DEFAULT_VEB_BUILD_MODULE set "DEFAULT_VEB_BUILD_MODULE="
+if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
+if not defined DEFAULT_LOG_FILE set "DEFAULT_LOG_FILE=build.log"
+if not defined DEFAULT_TOOLS_DIR set "DEFAULT_TOOLS_DIR="
+if not defined DEFAULT_EWDK_DIR set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
+if not defined DEFAULT_PAUSE_WHEN set "DEFAULT_PAUSE_WHEN=always"
+exit /b
+::SetDefaults
+
+:SetMetaInfo
 set "version=v2.4.0"
 set "lupdate=2021-09-05"
-title makeveb %version%
+set "ghlink=https://github.com/islzh/makeveb"
+set "tee=%~dp0..\tee.exe"
+set "clrRed=[91m"
+set "clrGrn=[92m"
+set "clrYlw=[93m"
+set "clrSuf=[0m"
+exit /b
+::SetMetaInfo
 
-set "clrPreRed=[91m"
-set "clrPreGrn=[92m"
-set "clrPreYlw=[93m"
-
-set "clrSuffix=[0m"
-
-set "make_target=%~1"
-if "%make_target:~0,1%" == "/" (
-    set "make_target="
-    goto paramparse
-)
-
-shift
-
-:paramparse
-if "%~1" == "" goto endparamparse
+:ParseArgs
+if "%~1" == "" exit /b
 set "param=%~1"
 set "switch=%param:~1%"
 if "%param:~0,1%" == "/" (
@@ -48,37 +59,31 @@ if "%param:~0,1%" == "/" (
     ) else if /i "%switch%" == "P" (
         set "pause_when=%~2"
     ) else (
-        >&2 echo makeveb: error: invalid switch [ %param% ]
+        >&2 call:Printc r "makeveb: ERROR: invalid switch: %param%"
         >&2 call:Usage
         exit /b 1
     )
     shift
     shift
-    goto paramparse
+    goto ParseArgs
 ) else (
     if "%make_target%" == "" (
         set "make_target=%param%"
         shift
-        goto paramparse
+        goto ParseArgs
     ) else (
-        >&2 echo makeveb: error: invalid argument [%param%]
+        >&2 call:Printc r "makeveb: ERROR: invalid argument: %param%"
         >&2 call:Usage
-        exit /b 2
+        exit /b 1
     )
 )
-:endparamparse
+exit /b
+::ParseArgs
 
-if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
-if not defined workdir set "workdir=%DEFAULT_WORKDIR%"
-
-if not defined VEB set "VEB=%DEFAULT_VEB%"
-if not exist "%workdir%\%VEB%.veb" (
-    @echo makeveb: WARNING: couldn't find %workdir%\%VEB%.veb
-    set "VEB="
-)
-
+:AssignDefaults
+if not defined VEB if exist "%workdir%\%DEFAULT_VEB%" set "VEB=%DEFAULT_VEB%"
 if not defined VEB_BUILD_MODULE set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
-
+if not defined workdir set "workdir=%DEFAULT_WORKDIR%"
 if not defined log (
     if defined DEFAULT_LOG_FILE (
         set "log=%DEFAULT_LOG_FILE%"
@@ -86,27 +91,90 @@ if not defined log (
         set "log=build.log"
     )
 )
-
 if not defined TOOLS_DIR set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
 if not defined EWDK_DIR set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
-
-if not exist %TOOLS_DIR% (
-    >&2 echo makeveb: error: defined TOOLS_DIR does not exist.
-    >&2 echo     TOOLS_DIR = [ %TOOLS_DIR% ]
-    exit /b 3
-)
-if not exist %EWDK_DIR% (
-    >&2 echo makeveb: error: defined EWDK_DIR does not exist.
-    >&2 echo     EWDK_DIR = [ %EWDK_DIR% ]
-    exit /b 4
-)
 if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
+exit /b
+::AssignDefaults
 
+:ValidateDirs
+if not exist "%TOOLS_DIR%" (
+    >&2 call:Printc r "makeveb: ERROR: defined TOOLS_DIR does not exist." ^
+                      "    TOOLS_DIR = %TOOLS_DIR%"
+    >&2 echo;
+)
+if not exist "%EWDK_DIR%" (
+    >&2 call:Printc r "makeveb: ERROR: defined EWDK_DIR does not exist." ^
+                      "    EWDK_DIR = %EWDK_DIR%"
+    >&2 echo;
+)
+exit /b
+::ValidateDirs
+
+:RemoveGitFromPath
+setlocal EnableDelayedExpansion
+set newpath=
+set "_path=%PATH%"
+set "_path=%_path: =#%"
+set "_path=%_path:;= %"
+set "_path=%_path:(=[%"
+set "_path=%_path:)=]%"
+for %%i in (%_path%) do (
+    echo %%i | findstr /i "\\git\\" > nul || set "newpath=!newpath!%%i;"
+)
+set "newpath=%newpath:#= %"
+set "newpath=%newpath:[=(%"
+set "newpath=%newpath:]=)%"
+set "PATH=%newpath%"
+setlocal DisableDelayedExpansion
+exit /b
+::RemoveGitFromPath
+
+:IfPrompt
+if "%make_target%" == "" (
+    if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
+    title makeveb %version% Command Prompt
+    prompt %clrGrn%MAKVEB$S%version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
+    cmd /k
+    popd
+    exit /b
+)
+exit /b 1
+::IfPrompt
+
+:BuildStart
+@call:Printc y "makeveb: target: %make_target%"
+title makeveb %version% - %make_target%
+"%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+set "errCode=%ErrorLevel%"
+@echo;
+if %errCode% EQU 0 (
+    title Finished: makeveb %version% - %make_target%
+    if /i "%pause_when%" == "always" (
+        pause
+    ) else if /i "%pause_when%" == "successful" (
+        pause
+    )
+) else (
+    title failed: makeveb %version% - %make_target%
+    >&2 call:Printc r "makeveb: failed to make %make_target%"
+    >&2 call:Printc r "error code: %errCode%"
+    if /i "%pause_when%" == "always" (
+        pause
+    ) else if /i "%pause_when%" == "failed" (
+        pause
+    )
+)
+exit /b
+::BuildStart
+
+:ConfigurationStatus
 @echo;
 @echo   ==========================================================================
 @echo   ^| MAKEVEB %version%
-@echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
 @echo   ^| Last Update: %lupdate%
+@echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
+@echo   ^| %ghlink%
 @echo   ==========================================================================
 @echo   ^| Current settings:
 @echo   ^|     VEB:                %VEB%
@@ -118,68 +186,15 @@ if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
 @echo   ^|     pause_when:         %pause_when%
 @echo   ==========================================================================
 @echo;
-
-pushd %workdir%
-
-setlocal EnableDelayedExpansion
-set newpath=
-set "_path=%PATH%"
-set "_path=%_path: =#%"
-set "_path=%_path:;= %"
-set "_path=%_path:(=[%"
-set "_path=%_path:)=]%"
-for %%i in (%_path%) do (
-    echo %%i | findstr /i /l "\git\" > nul || set "newpath=!newpath!;%%i"
-)
-set "newpath=%newpath:#= %"
-set "newpath=%newpath:[=(%"
-set "newpath=%newpath:]=)%"
-set "PATH=%newpath:~1%"
-endlocal
-
-if "%make_target%" == "" (
-    if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
-    title makeveb %version% Command Prompt
-    prompt %clrPreGrn%MAKVEB$S%version%%clrSuffix%$S%clrPreYlw%$P%clrSuffix%$_$+$G$S
-    cmd /k
-    popd
-    exit /b
-)
-
-@echo MAKEVEB: making [%make_target%]
-
-title makeveb %version% - %make_target%
-
-%TOOLS_DIR%\make %make_target% 2>&1 | %tee% %log%
-
-@echo;
-if %errorlevel% EQU 0 (
-    title finished: makeveb %version% - %make_target%
-    @echo MAKEVEB: finished successfully: [%make_target%]
-    if /i "%pause_when%" == "always" (
-        pause
-    ) else if /i "%pause_when%" == "successful" (
-        pause
-    )
-) else (
-    title failed: makeveb %version% - %make_target%
-    >&2 echo MAKEVEB: failed to make [%make_target%]
-    >&2 echo error code: %errorlevel%
-    if /i "%pause_when%" == "always" (
-        pause
-    ) else if /i "%pause_when%" == "failed" (
-        pause
-    )
-)
-
-popd
 exit /b
+::ConfigurationStatus
 
 :Usage
 @echo;
 @echo     MAKEVEB %version%
 @echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
 @echo     Last Update: %lupdate%
+@echo     %ghlink%
 @echo;
 @echo USAGE:
 @echo;
@@ -201,9 +216,28 @@ exit /b
 @echo ^<pause_when^>:  Available options: always, never, successful, failed.
 @echo                Default is [always].
 @echo;
-@echo EXAMPLES:
-@echo;
-@echo makeveb rebuild /V Standard /W C:\exampleproj /L buildlog.txt
-@echo         /T C:\BuildTools_37 /E C:\EWDK_1703 /P failed
-@echo;
-@echo makeveb sdl
+exit /b
+::Usage
+
+@REM Print with color
+@REM $1: color {r|y|g}
+@REM ...: content lines
+:Printc
+@setlocal
+@set clr=
+@set "suf=%clrSuf%"
+@if "%~1" == "r" (
+    set "clr=%clrRed%"
+) else if "%~1" == "y" (
+    set "clr=%clrYlw%"
+) else if "%~1" == "g" (
+    set "clr=%clrGrn%"
+) else (
+    set suf=
+)
+:printc_line
+@if "%~2" == "" exit /b
+@echo %clr%%~2%suf%
+@shift /2
+goto printc_line
+::Printc
