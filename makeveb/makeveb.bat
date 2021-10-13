@@ -117,7 +117,7 @@ if "%make_target%" == "" (
     prompt %clrGrn%MAKVEB$S%version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
     cmd /k
     popd
-    exit /b
+    exit /b 0
 )
 exit /b 1
 ::IfPrompt
