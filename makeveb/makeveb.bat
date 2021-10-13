@@ -10,7 +10,6 @@ call:AssignDefaults
 call:ConfigurationStatus
 call:ValidateDirs
 pushd "%workdir%"
-call:RemoveGitFromPath
 call:IfPrompt && exit /b
 call:BuildStart
 popd
@@ -110,25 +109,6 @@ if not exist "%EWDK_DIR%" (
 )
 exit /b
 ::ValidateDirs
-
-:RemoveGitFromPath
-setlocal EnableDelayedExpansion
-set newpath=
-set "_path=%PATH%"
-set "_path=%_path: =#%"
-set "_path=%_path:;= %"
-set "_path=%_path:(=[%"
-set "_path=%_path:)=]%"
-for %%i in (%_path%) do (
-    echo %%i | findstr /i "\\git\\" > nul || set "newpath=!newpath!%%i;"
-)
-set "newpath=%newpath:#= %"
-set "newpath=%newpath:[=(%"
-set "newpath=%newpath:]=)%"
-set "PATH=%newpath%"
-setlocal DisableDelayedExpansion
-exit /b
-::RemoveGitFromPath
 
 :IfPrompt
 if "%make_target%" == "" (
