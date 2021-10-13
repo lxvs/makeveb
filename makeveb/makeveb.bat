@@ -16,7 +16,7 @@ popd
 exit /b
 
 :SetDefaults
-if not defined DEFAULT_VEB set "DEFAULT_VEB=Standard.veb"
+if not defined DEFAULT_VEB set "DEFAULT_VEB="
 if not defined DEFAULT_VEB_BUILD_MODULE set "DEFAULT_VEB_BUILD_MODULE="
 if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
 if not defined DEFAULT_LOG_FILE set "DEFAULT_LOG_FILE=build.log"
@@ -193,7 +193,7 @@ exit /b
 @echo;
 @echo ^<make_target^>: Target to make. If not specified, setup build environment only.
 @echo;
-@echo ^<VEB^>: Specify the veb file. Can be empty if there is only one.
+@echo ^<VEB^>: Specify the veb file ^(without .veb extention^). Can be empty if there is only one.
 @echo;
 @echo ^<VEB_BUILD_MODULE^>: Specify the module to build. If not specified, build all modules.
 @echo;
