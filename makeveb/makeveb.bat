@@ -125,7 +125,11 @@ exit /b 1
 :BuildStart
 @call:Printc y "makeveb: target: %make_target%"
 title makeveb %version% - %make_target%
-"%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+if /i "%log%" == "nul" (
+    "%TOOLS_DIR%\make.exe" %make_target%
+) else (
+    "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+)
 set "errCode=%ErrorLevel%"
 @echo;
 if %errCode% EQU 0 (
@@ -187,14 +191,17 @@ exit /b
 @echo             [ /E ^<EWDK_DIR^> ]
 @echo             [ /P ^<pause_when^>]
 @echo;
-@echo ^<make_target^>:  Target to make. If not specified, will enter command prompt.
+@echo ^<make_target^>: Target to make. If not specified, setup build environment only.
+@echo;
 @echo ^<VEB^>: Specify the veb file. Can be empty if there is only one.
-@echo ^<VEB_BUILD_MODULE^>: Specify the moudule^(s^) to build. If left empty, build all
-@echo                     modules.
+@echo;
+@echo ^<VEB_BUILD_MODULE^>: Specify the module to build. If not specified, build all modules.
+@echo;
 @echo ^<workdir^>: If not specified, will be current directory.
-@echo ^<log^>: Build log filename, default is build.log
-@echo ^<pause_when^>:  Available options: always, never, successful, failed.
-@echo                Default is [always].
+@echo;
+@echo ^<log^>: Build log filename, default is build.log. If 'nul' is specified, only write in console.
+@echo;
+@echo ^<pause_when^>: Available options: always, never, successful, failed. Default is [always].
 @echo;
 exit /b
 ::Usage
