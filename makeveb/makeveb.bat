@@ -126,9 +126,9 @@ exit /b 1
 @call:Printc y "makeveb: target: %make_target%"
 title makeveb %version% - %make_target%
 if /i "%log%" == "nul" (
-    "%TOOLS_DIR%\make.exe" %make_target%
+    echo;| "%TOOLS_DIR%\make.exe" %make_target%
 ) else (
-    "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+    echo;| "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
 )
 set "errCode=%ErrorLevel%"
 @echo;
