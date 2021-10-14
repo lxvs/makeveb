@@ -7,8 +7,8 @@ title makeveb %version%
 if "%~1" == "/?" goto Usage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
+call:ValidateDirs || exit /b
 call:ConfigurationStatus
-call:ValidateDirs
 pushd "%workdir%"
 call:IfPrompt && exit /b
 call:BuildStart
@@ -97,17 +97,25 @@ exit /b
 ::AssignDefaults
 
 :ValidateDirs
-if not exist "%TOOLS_DIR%" (
-    >&2 call:Printc r "makeveb: ERROR: defined TOOLS_DIR does not exist." ^
-                      "    TOOLS_DIR = %TOOLS_DIR%"
-    >&2 echo;
+if not defined TOOLS_DIR (
+    >&2 call:Printc r "makeveb: ERROR: TOOLS_DIR is not defined."
+    exit /b 1
+) else (
+    if not exist "%TOOLS_DIR%" (
+        >&2 call:Printc r "makeveb: ERROR: defined TOOLS_DIR does not exist." "    TOOLS_DIR = %TOOLS_DIR%"
+        exit /b 1
+    )
 )
-if not exist "%EWDK_DIR%" (
-    >&2 call:Printc r "makeveb: ERROR: defined EWDK_DIR does not exist." ^
-                      "    EWDK_DIR = %EWDK_DIR%"
-    >&2 echo;
+if not defined EWDK_DIR (
+    >&2 call:Printc r "makeveb: ERROR: EWDK_DIR is not defined."
+    exit /b 1
+) else (
+    if not exist "%EWDK_DIR%" (
+        >&2 call:Printc r "makeveb: ERROR: defined EWDK_DIR does not exist." "    EWDK_DIR = %EWDK_DIR%"
+        exit /b 1
+    )
 )
-exit /b
+exit /b 0
 ::ValidateDirs
 
 :IfPrompt
