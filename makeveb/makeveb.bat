@@ -27,8 +27,8 @@ exit /b
 ::SetDefaults
 
 :SetMetaInfo
-set "version=v2.5.0"
-set "lupdate=2021-10-13"
+set "version=v2.5.1"
+set "lupdate=2021-10-14"
 set "ghlink=https://github.com/islzh/makeveb"
 set "tee=%~dp0..\tee.exe"
 set "clrRed=[91m"
