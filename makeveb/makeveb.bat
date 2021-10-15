@@ -4,7 +4,7 @@ setlocal
 call:SetDefaults
 call:SetMetaInfo
 title makeveb %version%
-if "%~1" == "/?" goto Usage
+if "%~1" == "/?" goto FullUsage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
 call:ValidateDirs || exit /b
@@ -27,7 +27,7 @@ exit /b
 ::SetDefaults
 
 :SetMetaInfo
-set "version=v2.5.1"
+set "version=2.5.1"
 set "lupdate=2021-10-14"
 set "ghlink=https://github.com/islzh/makeveb"
 set "tee=%~dp0..\tee.exe"
@@ -57,6 +57,18 @@ if "%param:~0,1%" == "/" (
         set "EWDK_DIR=%~2"
     ) else if /i "%switch%" == "P" (
         set "pause_when=%~2"
+    ) else if /i "%~1" == "/h" (
+        call:FullUsage
+        exit /b 1
+    ) else if /i "%~1" == "/help" (
+        call:FullUsage
+        exit /b 1
+    ) else if /i "%~1" == "/ver" (
+        call:Version
+        exit /b 1
+    ) else if /i "%~1" == "/version" (
+        call:Version
+        exit /b 1
     ) else (
         >&2 call:Printc r "makeveb: ERROR: invalid switch: %param%"
         >&2 call:Usage
@@ -99,19 +111,23 @@ exit /b
 :ValidateDirs
 if not defined TOOLS_DIR (
     >&2 call:Printc r "makeveb: ERROR: TOOLS_DIR is not defined."
+    >&2 call:Usage
     exit /b 1
 ) else (
     if not exist "%TOOLS_DIR%" (
         >&2 call:Printc r "makeveb: ERROR: defined TOOLS_DIR does not exist." "    TOOLS_DIR = %TOOLS_DIR%"
+        >&2 call:Usage
         exit /b 1
     )
 )
 if not defined EWDK_DIR (
     >&2 call:Printc r "makeveb: ERROR: EWDK_DIR is not defined."
+    >&2 call:Usage
     exit /b 1
 ) else (
     if not exist "%EWDK_DIR%" (
         >&2 call:Printc r "makeveb: ERROR: defined EWDK_DIR does not exist." "    EWDK_DIR = %EWDK_DIR%"
+        >&2 call:Usage
         exit /b 1
     )
 )
@@ -181,36 +197,36 @@ exit /b
 exit /b
 ::ConfigurationStatus
 
-:Usage
+:FullUsage
+call:Version
+call:Usage
+exit /b
+::FullUsage
+
+:Version
 @echo;
-@echo     MAKEVEB %version%
-@echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
+@echo     makeveb %version%
 @echo     Last Update: %lupdate%
+@echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
 @echo     %ghlink%
+exit /b
+::Version
+
+:Usage
 @echo;
 @echo USAGE:
 @echo;
-@echo makeveb.bat [ ^<make_target^> ]
-@echo             [ /V ^<VEB^> ]
-@echo             [ /M ^<VEB_BUILD_MODULE^> ]
-@echo             [ /W ^<workdir^> ]
-@echo             [ /L ^<log^> ]
-@echo             [ /T ^<TOOLS_DIR^> ]
-@echo             [ /E ^<EWDK_DIR^> ]
-@echo             [ /P ^<pause_when^>]
+@echo makeveb.bat { /? ^| /help }
+@echo makeveb.bat { /ver ^| /version }
+@echo makeveb.bat [ ^<make_target^> ] [ /V ^<VEB^> ] [ /M ^<VEB_BUILD_MODULE^> ] [ /W ^<workdir^> ] [ /L ^<log^> ]
+@echo             [ /T ^<TOOLS_DIR^> ] [ /E ^<EWDK_DIR^> ] [ /P ^<pause_when^>]
 @echo;
-@echo ^<make_target^>: Target to make. If not specified, setup build environment only.
-@echo;
-@echo ^<VEB^>: Specify the veb file ^(without .veb extention^). Can be empty if there is only one.
-@echo;
-@echo ^<VEB_BUILD_MODULE^>: Specify the module to build. If not specified, build all modules.
-@echo;
-@echo ^<workdir^>: If not specified, will be current directory.
-@echo;
-@echo ^<log^>: Build log filename, default is build.log. If 'nul' is specified, only write in console.
-@echo;
-@echo ^<pause_when^>: Available options: always, never, successful, failed. Default is [always].
-@echo;
+@echo make_target:        Target to make. If not specified, setup build environment only.
+@echo VEB:                Specify the veb file ^(without .veb extention^). Can be empty if there is only one.
+@echo VEB_BUILD_MODULE:   Specify the module to build. If not specified, build all modules.
+@echo workdir:            If not specified, will be current directory.
+@echo log:                Build log filename, default is build.log. If 'nul' is specified, only write in console.
+@echo pause_when:         Available options: always, never, successful, failed. Default is [always].
 exit /b
 ::Usage
 
