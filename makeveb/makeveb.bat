@@ -8,8 +8,9 @@ if "%~1" == "/?" goto FullUsage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
 call:ValidateDirs || exit /b
-call:ConfigurationStatus
 pushd "%workdir%"
+set "workdir=%cd%"
+call:ConfigurationStatus
 call:IfPrompt && exit /b
 call:BuildStart
 popd
