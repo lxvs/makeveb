@@ -1,10 +1,7 @@
 @echo off
 setlocal
 
-set "batchname=%~nx0"
-set "batchfolder=%~dp0"
-if "%batchfolder:~-1%" == "\" set "batchfolder=%batchfolder:~0,-1%"
-set "mv_dir=%batchfolder%\makeveb"
+set "mv_dir=%~dp0makeveb"
 set "mv_bat=makeveb.bat"
 set "reg=%SYSTEMROOT%\System32\reg.exe"
 
