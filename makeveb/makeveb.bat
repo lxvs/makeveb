@@ -139,7 +139,7 @@ exit /b 0
 if "%make_target%" == "" (
     if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
     title makeveb %version% Command Prompt
-    prompt %clrGrn%MAKVEB$S%version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
+    prompt %clrGrn%MAKEVEB$S%version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
     cmd /k
     popd
     exit /b 0
