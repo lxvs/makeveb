@@ -4,7 +4,7 @@ setlocal
 call:SetDefaults
 call:SetMetaInfo
 title makeveb %version%
-if "%~1" == "/?" goto FullUsage
+if "%~1" == "/?" goto Usage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
 call:ValidateDirs || exit /b
@@ -60,10 +60,10 @@ if "%param:~0,1%" == "/" (
     ) else if /i "%switch%" == "P" (
         set "pause_when=%~2"
     ) else if /i "%~1" == "/h" (
-        call:FullUsage
+        call:Usage
         exit /b 1
     ) else if /i "%~1" == "/help" (
-        call:FullUsage
+        call:Usage
         exit /b 1
     ) else if /i "%~1" == "/ver" (
         call:Version
@@ -72,8 +72,8 @@ if "%param:~0,1%" == "/" (
         call:Version
         exit /b 1
     ) else (
-        >&2 call:Printc r "makeveb: ERROR: invalid switch: %param%"
-        >&2 call:Usage
+        >&2 call:Printc r "makeveb: error: invalid switch: %param%"
+        >&2 call:UsagePrompt
         exit /b 1
     )
     shift
@@ -85,8 +85,8 @@ if "%param:~0,1%" == "/" (
         shift
         goto ParseArgs
     ) else (
-        >&2 call:Printc r "makeveb: ERROR: invalid argument: %param%"
-        >&2 call:Usage
+        >&2 call:Printc r "makeveb: error: invalid argument: %param%"
+        >&2 call:UsagePrompt
         exit /b 1
     )
 )
@@ -112,24 +112,24 @@ exit /b
 
 :ValidateDirs
 if not defined TOOLS_DIR (
-    >&2 call:Printc r "makeveb: ERROR: TOOLS_DIR is not defined."
-    >&2 call:Usage
+    >&2 call:Printc r "makeveb: error: TOOLS_DIR is not defined."
+    >&2 call:UsagePrompt
     exit /b 1
 ) else (
     if not exist "%TOOLS_DIR%" (
-        >&2 call:Printc r "makeveb: ERROR: defined TOOLS_DIR does not exist." "    TOOLS_DIR = %TOOLS_DIR%"
-        >&2 call:Usage
+        >&2 call:Printc r "makeveb: error: defined TOOLS_DIR does not exist." "    TOOLS_DIR = %TOOLS_DIR%"
+        >&2 call:UsagePrompt
         exit /b 1
     )
 )
 if not defined EWDK_DIR (
-    >&2 call:Printc r "makeveb: ERROR: EWDK_DIR is not defined."
-    >&2 call:Usage
+    >&2 call:Printc r "makeveb: error: EWDK_DIR is not defined."
+    >&2 call:UsagePrompt
     exit /b 1
 ) else (
     if not exist "%EWDK_DIR%" (
-        >&2 call:Printc r "makeveb: ERROR: defined EWDK_DIR does not exist." "    EWDK_DIR = %EWDK_DIR%"
-        >&2 call:Usage
+        >&2 call:Printc r "makeveb: error: defined EWDK_DIR does not exist." "    EWDK_DIR = %EWDK_DIR%"
+        >&2 call:UsagePrompt
         exit /b 1
     )
 )
@@ -187,7 +187,7 @@ exit /b
 :ConfigurationStatus
 @echo;
 @echo   ==========================================================================
-@echo   ^| MAKEVEB %version%
+@echo   ^| makeveb %version%
 @echo   ^| Last Update: %lupdate%
 @echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
 @echo   ^| %ghlink%
@@ -205,12 +205,6 @@ exit /b
 exit /b
 ::ConfigurationStatus
 
-:FullUsage
-call:Version
-call:Usage
-exit /b
-::FullUsage
-
 :Version
 @echo;
 @echo     makeveb %version%
@@ -221,20 +215,27 @@ exit /b
 ::Version
 
 :Usage
+call:Version
 @echo;
-@echo USAGE:
+@echo usage:
+@echo     makeveb.bat /? ^| /help
+@echo     makeveb.bat /version
+@echo     makeveb.bat [^<make_target^>] [/V ^<VEB^>] [/M ^<VEB_BUILD_MODULE^>] [/W ^<workdir^>]
+@echo                 [/L ^<log^>] [/T ^<TOOLS_DIR^>] [/E ^<EWDK_DIR^>] [/P ^<pause_when^>]
 @echo;
-@echo makeveb.bat { /? ^| /help }
-@echo makeveb.bat { /ver ^| /version }
-@echo makeveb.bat [ ^<make_target^> ] [ /V ^<VEB^> ] [ /M ^<VEB_BUILD_MODULE^> ] [ /W ^<workdir^> ] [ /L ^<log^> ]
-@echo             [ /T ^<TOOLS_DIR^> ] [ /E ^<EWDK_DIR^> ] [ /P ^<pause_when^>]
-@echo;
-@echo make_target:        Target to make. If not specified, setup build environment only.
-@echo VEB:                Specify the veb file ^(without .veb extention^). Can be empty if there is only one.
-@echo VEB_BUILD_MODULE:   Specify the module to build. If not specified, build all modules.
-@echo workdir:            If not specified, will be current directory.
-@echo log:                Build log filename, default is build.log. If 'nul' is specified, only write in console.
-@echo pause_when:         Available options: always, never, successful, failed. Default is [always].
+@echo make_target:
+@echo     Target to make. If not specified, setup build environment only.
+@echo VEB:
+@echo     VEB file ^(without ".veb" extention^).
+@echo VEB_BUILD_MODULE:
+@echo     Module to build. If not specified, build all modules.
+@echo workdir:
+@echo     If not specified, will be current directory.
+@echo log:
+@echo     Build log filename, default is build.log. If 'nul' is specified, only write
+@echo     in console.
+@echo pause_when:
+@echo     Available options: always, never, successful, failed. Default is "always".
 exit /b
 ::Usage
 
@@ -260,3 +261,8 @@ exit /b
 @shift /2
 goto printc_line
 ::Printc
+
+:UsagePrompt
+@echo Try "makeveb /?" for help.
+@exit /b
+::UsagePrompt
