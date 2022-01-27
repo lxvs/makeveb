@@ -8,6 +8,7 @@ if "%~1" == "/?" goto FullUsage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
 call:ValidateDirs || exit /b
+call:ValidateWorkdir || exit /b
 pushd "%workdir%"
 set "workdir=%cd%"
 call:ConfigurationStatus
@@ -134,6 +135,12 @@ if not defined EWDK_DIR (
 )
 exit /b 0
 ::ValidateDirs
+
+:ValidateWorkdir
+if exist "%workdir%" exit /b 0
+>&2 call:Printc r "makeveb: error: nonexistent working directory: %workdir%"
+exit /b 1
+::ValidateWorkdir
 
 :IfPrompt
 if "%make_target%" == "" (
