@@ -3,6 +3,7 @@ setlocal
 
 call:SetDefaults
 call:SetMetaInfo
+call:SetColors
 title makeveb %version%
 if "%~1" == "/?" goto Usage
 call:ParseArgs %* || exit /b
@@ -33,12 +34,16 @@ set "version=2.5.4"
 set "lupdate=2022-01-27"
 set "ghlink=https://github.com/islzh/makeveb"
 set "tee=%~dp0..\tee.exe"
+exit /b
+::SetMetaInfo
+
+:SetColors
 set "clrRed=[91m"
 set "clrGrn=[92m"
 set "clrYlw=[93m"
 set "clrSuf=[0m"
 exit /b
-::SetMetaInfo
+::SetColors
 
 :ParseArgs
 if "%~1" == "" exit /b
@@ -59,6 +64,17 @@ if "%param:~0,1%" == "/" (
         set "EWDK_DIR=%~2"
     ) else if /i "%switch%" == "P" (
         set "pause_when=%~2"
+    ) else if /i "%switch%" == "nocolor" (
+        set "clrRed="
+        set "clrGrn="
+        set "clrYlw="
+        set "clrSuf="
+        shift
+        goto ParseArgs
+    ) else if /i "%switch%" == "color" (
+        call:SetColors
+        shift
+        goto ParseArgs
     ) else if /i "%switch%" == "help" (
         call:Usage
         exit /b 1
@@ -215,7 +231,7 @@ call:Version
 @echo     makeveb.bat /? ^| /help
 @echo     makeveb.bat /version
 @echo     makeveb.bat [^<make_target^>] [/V ^<VEB^>] [/M ^<VEB_BUILD_MODULE^>] [/W ^<workdir^>] [/L ^<log^>] [/T ^<TOOLS_DIR^>]
-@echo                 [/E ^<EWDK_DIR^>] [/P ^<pause_when^>]
+@echo                 [/E ^<EWDK_DIR^>] [/P ^<pause_when^>] [/color ^| /nocolor]
 @echo;
 @echo make_target:
 @echo     Target to make. If not specified, setup build environment only.
@@ -229,6 +245,10 @@ call:Version
 @echo     Build log filename, default is build.log. If 'nul' is specified, only write in console.
 @echo pause_when:
 @echo     Available options: always, never, successful, failed. Default is "always".
+@echo /color:
+@echo     Enable colored output, this is the default.
+@echo /nocolor:
+@echo     Disable colored output.
 exit /b
 ::Usage
 
