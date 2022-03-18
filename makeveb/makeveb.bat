@@ -59,16 +59,16 @@ if "%param:~0,1%" == "/" (
         set "EWDK_DIR=%~2"
     ) else if /i "%switch%" == "P" (
         set "pause_when=%~2"
-    ) else if /i "%~1" == "/h" (
+    ) else if /i "%switch%" == "h" (
         call:Usage
         exit /b 1
-    ) else if /i "%~1" == "/help" (
+    ) else if /i "%switch%" == "help" (
         call:Usage
         exit /b 1
-    ) else if /i "%~1" == "/ver" (
+    ) else if /i "%switch%" == "ver" (
         call:Version
         exit /b 1
-    ) else if /i "%~1" == "/version" (
+    ) else if /i "%switch%" == "version" (
         call:Version
         exit /b 1
     ) else (
