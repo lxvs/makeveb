@@ -107,13 +107,8 @@ exit /b
 if not defined VEB if exist "%workdir%\%DEFAULT_VEB%" set "VEB=%DEFAULT_VEB%"
 if not defined VEB_BUILD_MODULE set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
 if not defined workdir set "workdir=%DEFAULT_WORKDIR%"
-if not defined log (
-    if defined DEFAULT_LOG_FILE (
-        set "log=%DEFAULT_LOG_FILE%"
-    ) else (
-        set "log=build.log"
-    )
-)
+if not defined log set "log=%DEFAULT_LOG_FILE%"
+if not defined log set "log=nul"
 if not defined TOOLS_DIR set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
 if not defined EWDK_DIR set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
 if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
