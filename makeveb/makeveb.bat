@@ -30,8 +30,8 @@ exit /b
 ::SetDefaults
 
 :SetMetaInfo
-set "version=2.6.0"
-set "lupdate=2022-03-18"
+set "version=2.6.1"
+set "lupdate=2022-03-26"
 set "ghlink=https://github.com/islzh/makeveb"
 set "tee=%~dp0..\tee.exe"
 exit /b
