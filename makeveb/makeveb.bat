@@ -16,7 +16,7 @@ call:ConfigurationStatus
 call:IfPrompt && exit /b
 call:BuildStart
 popd
-exit /b
+exit /b %errCode%
 
 :SetDefaults
 if not defined DEFAULT_VEB set "DEFAULT_VEB="
@@ -191,7 +191,7 @@ if %errCode% EQU 0 (
         pause
     )
 )
-exit /b
+exit /b %errCode%
 ::BuildStart
 
 :ConfigurationStatus
