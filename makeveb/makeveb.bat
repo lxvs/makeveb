@@ -22,7 +22,7 @@ exit /b %errCode%
 if not defined DEFAULT_VEB set "DEFAULT_VEB="
 if not defined DEFAULT_VEB_BUILD_MODULE set "DEFAULT_VEB_BUILD_MODULE="
 if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
-if not defined DEFAULT_LOG_FILE set "DEFAULT_LOG_FILE=build.log"
+if not defined DEFAULT_LOG_FILE set "DEFAULT_LOG_FILE=nul"
 if not defined DEFAULT_TOOLS_DIR set "DEFAULT_TOOLS_DIR="
 if not defined DEFAULT_EWDK_DIR set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 if not defined DEFAULT_PAUSE_WHEN set "DEFAULT_PAUSE_WHEN=always"
@@ -238,6 +238,7 @@ call:Version
 @echo     If not specified, will be current directory.
 @echo log:
 @echo     Build log filename, default is build.log. If 'nul' is specified, only write in console.
+@echo     Note that to get a reliable exit code you need to set log to 'nul'.
 @echo pause_when:
 @echo     Available options: always, never, successful, failed. Default is "always".
 @echo /color:
