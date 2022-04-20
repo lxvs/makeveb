@@ -197,7 +197,7 @@ exit /b %errCode%
 @echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
 @echo   ^| %ghlink%
 @echo   ==========================================================================
-@echo   ^| Current settings:
+@echo   ^| Current configurations:
 @echo   ^|     VEB:                %VEB%
 @echo   ^|     VEB_BUILD_MODULE:   %VEB_BUILD_MODULE%
 @echo   ^|     workdir:            %workdir%
