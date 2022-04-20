@@ -26,6 +26,7 @@ if not defined DEFAULT_LOG_FILE set "DEFAULT_LOG_FILE=nul"
 if not defined DEFAULT_TOOLS_DIR set "DEFAULT_TOOLS_DIR="
 if not defined DEFAULT_EWDK_DIR set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
 if not defined DEFAULT_PAUSE_WHEN set "DEFAULT_PAUSE_WHEN=always"
+if not defined DEFAULT_INTERACTIVE set "DEFAULT_INTERACTIVE=1"
 exit /b
 ::SetDefaults
 
@@ -75,6 +76,18 @@ if "%param:~0,1%" == "/" (
         call:SetColors
         shift
         goto ParseArgs
+    ) else if /i "%switch%" == "nointeractive" (
+        set interactive=0
+        shift
+        goto ParseArgs
+    ) else if /i "%switch%" == "noninteractive" (
+        set interactive=0
+        shift
+        goto ParseArgs
+    ) else if /i "%switch%" == "interactive" (
+        set interactive=1
+        shift
+        goto ParseArgs
     ) else if /i "%switch%" == "help" (
         call:Usage
         exit /b 1
@@ -112,6 +125,7 @@ if not defined log set "log=nul"
 if not defined TOOLS_DIR set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
 if not defined EWDK_DIR set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
 if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
+if not defined interactive set "interactive=%DEFAULT_INTERACTIVE%"
 exit /b
 ::AssignDefaults
 
@@ -162,10 +176,18 @@ exit /b 1
 :BuildStart
 @call:Printc y "makeveb: target: %make_target%"
 title makeveb %version% - %make_target%
-if /i "%log%" == "nul" (
-    echo;| "%TOOLS_DIR%\make.exe" %make_target%
+if "%interactive%" == "0" (
+    if /i "%log%" == "nul" (
+        "%TOOLS_DIR%\make.exe" %make_target%
+    ) else (
+        "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+    )
 ) else (
-    echo;| "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+    if /i "%log%" == "nul" (
+        echo;| "%TOOLS_DIR%\make.exe" %make_target%
+    ) else (
+        echo;| "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+    )
 )
 set "errCode=%ErrorLevel%"
 @echo;
@@ -205,6 +227,7 @@ exit /b %errCode%
 @echo   ^|     TOOLS_DIR:          %TOOLS_DIR%
 @echo   ^|     EWDK_DIR:           %EWDK_DIR%
 @echo   ^|     pause_when:         %pause_when%
+@echo   ^|     interactive:        %interactive%
 @echo   ==========================================================================
 @echo;
 exit /b
@@ -226,7 +249,7 @@ call:Version
 @echo     makeveb.bat /? ^| /help
 @echo     makeveb.bat /version
 @echo     makeveb.bat [^<make_target^>] [/V ^<VEB^>] [/M ^<VEB_BUILD_MODULE^>] [/W ^<workdir^>] [/L ^<log^>] [/T ^<TOOLS_DIR^>]
-@echo                 [/E ^<EWDK_DIR^>] [/P ^<pause_when^>] [/color ^| /nocolor]
+@echo                 [/E ^<EWDK_DIR^>] [/P ^<pause_when^>] [/color ^| /nocolor] [/interactive ^| /nointeractive]
 @echo;
 @echo make_target:
 @echo     Target to make. If not specified, setup build environment only.
@@ -245,6 +268,11 @@ call:Version
 @echo     Enable colored output, this is the default.
 @echo /nocolor:
 @echo     Disable colored output.
+@echo /interactive:
+@echo     Specify current shell is an interactive one, makeveb will positively block keyboard interactions ^(such as pauses^)
+@echo     in this mode. This is the default.
+@echo /nointeractive:
+@echo     Specify current shell is an non-interactive one, makeveb won't block keyboard interactions in this mode.
 exit /b
 ::Usage
 
