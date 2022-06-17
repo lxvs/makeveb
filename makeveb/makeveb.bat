@@ -35,6 +35,7 @@ set "version=2.7.0"
 set "lupdate=2022-04-20"
 set "ghlink=https://github.com/islzh/makeveb"
 set "tee=%~dp0..\tee.exe"
+set "tail=%~dp0..\tail.exe"
 exit /b
 ::SetMetaInfo
 
@@ -191,6 +192,24 @@ if "%interactive%" == "0" (
 )
 set "errCode=%ErrorLevel%"
 @echo;
+call:GetResults "%log%"
+call:ShowResults
+exit /b
+::BuildStart
+
+:GetResults
+if /i "%~1" == "nul" exit /b %errCode%
+set errCode=1
+for /f "delims=" %%i in ('%tail% --lines=3 %log%') do (
+    if /i "%%~i" == "All output modules were successfully built." (
+        set errCode=0
+        exit /b %errCode%
+    )
+)
+exit /b %errCode%
+::GetResults
+
+:ShowResults
 if %errCode% EQU 0 (
     title Finished: makeveb %version% - %make_target%
     if /i "%pause_when%" == "always" (
@@ -209,7 +228,7 @@ if %errCode% EQU 0 (
     )
 )
 exit /b %errCode%
-::BuildStart
+::ShowResults
 
 :ConfigurationStatus
 @echo;
