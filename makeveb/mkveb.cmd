@@ -1,1 +1,1 @@
-@makeveb %*
+@%~dp0makeveb.bat %*
