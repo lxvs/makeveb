@@ -33,7 +33,7 @@ exit /b
 :SetMetaInfo
 set "version=2.7.1"
 set "lupdate=2022-06-17"
-set "ghlink=https://github.com/islzh/makeveb"
+set "link=https://gitlab.com/lzhh/makeveb"
 set "tee=%~dp0..\tee.exe"
 set "tail=%~dp0..\tail.exe"
 exit /b
@@ -233,10 +233,9 @@ exit /b %errCode%
 :ConfigurationStatus
 @echo;
 @echo   ==========================================================================
-@echo   ^| makeveb %version%
-@echo   ^| Last Update: %lupdate%
-@echo   ^| Johnny Appleseed ^<liuzhaohui@inspur.com^>
-@echo   ^| %ghlink%
+@echo   ^| makeveb %version% ^(%lupdate%^)
+@echo   ^| Liu, Zhao-hui ^<liuzhaohui@inspur.com^>
+@echo   ^| %link%
 @echo   ==========================================================================
 @echo   ^| Current configurations:
 @echo   ^|     VEB:                %VEB%
@@ -254,10 +253,9 @@ exit /b
 
 :Version
 @echo;
-@echo     makeveb %version%
-@echo     Last Update: %lupdate%
-@echo     Johnny Appleseed ^<liuzhaohui@inspur.com^>
-@echo     %ghlink%
+@echo     makeveb %version% ^(%lupdate%^)
+@echo     Liu, Zhao-hui ^<liuzhaohui@inspur.com^>
+@echo     %link%
 exit /b
 ::Version
 
