@@ -4,7 +4,7 @@ setlocal
 call:SetDefaults
 call:SetMetaInfo
 call:SetColors
-title makeveb %version%
+title makeveb %makeveb_version%
 if "%~1" == "/?" goto Usage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
@@ -31,11 +31,11 @@ exit /b
 ::SetDefaults
 
 :SetMetaInfo
-set "version=2.7.1"
-set "lupdate=2022-06-17"
-set "link=https://gitlab.com/lzhh/makeveb"
-set "tee=%~dp0..\tee.exe"
-set "tail=%~dp0..\tail.exe"
+set "makeveb_version=2.7.1"
+set "makeveb_date=2022-06-17"
+set "makeveb_link=https://gitlab.com/lzhh/makeveb"
+set "makeveb_tee=%~dp0..\tee.exe"
+set "makeveb_tail=%~dp0..\tail.exe"
 exit /b
 ::SetMetaInfo
 
@@ -165,8 +165,8 @@ exit /b 1
 :IfPrompt
 if "%make_target%" == "" (
     if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
-    title makeveb %version% Command Prompt
-    prompt %clrGrn%MAKEVEB$S%version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
+    title makeveb %makeveb_version% Command Prompt
+    prompt %clrGrn%MAKEVEB$S%makeveb_version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
     cmd /k
     popd
     exit /b 0
@@ -176,18 +176,18 @@ exit /b 1
 
 :BuildStart
 @call:Printc y "makeveb: target: %make_target%"
-title makeveb %version% - %make_target%
+title makeveb %makeveb_version% - %make_target%
 if "%interactive%" == "0" (
     if /i "%log%" == "nul" (
         "%TOOLS_DIR%\make.exe" %make_target%
     ) else (
-        "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+        "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %makeveb_tee% %log%
     )
 ) else (
     if /i "%log%" == "nul" (
         echo;| "%TOOLS_DIR%\make.exe" %make_target%
     ) else (
-        echo;| "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %tee% %log%
+        echo;| "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %makeveb_tee% %log%
     )
 )
 set "errCode=%ErrorLevel%"
@@ -200,7 +200,7 @@ exit /b
 :GetResults
 if /i "%~1" == "nul" exit /b %errCode%
 set errCode=1
-for /f "delims=" %%i in ('%tail% --lines=3 %log%') do (
+for /f "delims=" %%i in ('%makeveb_tail% --lines=3 %log%') do (
     if /i "%%~i" == "All output modules were successfully built." (
         set errCode=0
         exit /b %errCode%
@@ -211,14 +211,14 @@ exit /b %errCode%
 
 :ShowResults
 if %errCode% EQU 0 (
-    title Finished: makeveb %version% - %make_target%
+    title Finished: makeveb %makeveb_version% - %make_target%
     if /i "%pause_when%" == "always" (
         pause
     ) else if /i "%pause_when%" == "successful" (
         pause
     )
 ) else (
-    title failed: makeveb %version% - %make_target%
+    title failed: makeveb %makeveb_version% - %make_target%
     >&2 call:Printc r "makeveb: failed to make %make_target%"
     >&2 call:Printc r "error code: %errCode%"
     if /i "%pause_when%" == "always" (
@@ -233,9 +233,9 @@ exit /b %errCode%
 :ConfigurationStatus
 @echo;
 @echo   ==========================================================================
-@echo   ^| makeveb %version% ^(%lupdate%^)
+@echo   ^| makeveb %makeveb_version% ^(%makeveb_date%^)
 @echo   ^| Liu, Zhao-hui ^<liuzhaohui@inspur.com^>
-@echo   ^| %link%
+@echo   ^| %makeveb_link%
 @echo   ==========================================================================
 @echo   ^| Current configurations:
 @echo   ^|     VEB:                %VEB%
@@ -253,9 +253,9 @@ exit /b
 
 :Version
 @echo;
-@echo     makeveb %version% ^(%lupdate%^)
+@echo     makeveb %makeveb_version% ^(%makeveb_date%^)
 @echo     Liu, Zhao-hui ^<liuzhaohui@inspur.com^>
-@echo     %link%
+@echo     %makeveb_link%
 exit /b
 ::Version
 
