@@ -239,7 +239,9 @@ exit /b %errCode%
 @echo   ==========================================================================
 @echo   ^| Current configurations:
 @echo   ^|     VEB:                %VEB%
+if defined VEB_BUILD_MODULE (
 @echo   ^|     VEB_BUILD_MODULE:   %VEB_BUILD_MODULE%
+)
 @echo   ^|     workdir:            %workdir%
 @echo   ^|     log:                %log%
 @echo   ^|     TOOLS_DIR:          %TOOLS_DIR%
