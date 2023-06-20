@@ -234,7 +234,7 @@ exit /b %errCode%
 @echo;
 @echo   ==========================================================================
 @echo   ^| makeveb %makeveb_version% ^(%makeveb_date%^)
-@echo   ^| Liu, Zhao-hui ^<liuzhaohui@inspur.com^>
+@echo   ^| Liu, Zhao-hui ^<liuzhaohui@ieisystem.com^>
 @echo   ^| %makeveb_link%
 @echo   ==========================================================================
 @echo   ^| Current configurations:
