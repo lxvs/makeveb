@@ -36,6 +36,7 @@ set "makeveb_date=2022-09-09"
 set "makeveb_link=https://gitlab.com/lzhh/makeveb"
 set "makeveb_tee=%~dp0..\tee.exe"
 set "makeveb_tail=%~dp0..\tail.exe"
+set "makeveb_envs="
 exit /b
 ::SetMetaInfo
 
@@ -53,19 +54,53 @@ set "param=%~1"
 set "switch=%param:~1%"
 if "%param:~0,1%" == "/" (
     if /i "%switch%" == "V" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "VEB=%~2"
     ) else if /i "%switch%" == "M" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "VEB_BUILD_MODULE=%~2"
     ) else if /i "%switch%" == "W" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "workdir=%~2"
     ) else if /i "%switch%" == "L" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "log=%~2"
     ) else if /i "%switch%" == "T" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "TOOLS_DIR=%~2"
     ) else if /i "%switch%" == "E" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "EWDK_DIR=%~2"
     ) else if /i "%switch%" == "P" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
         set "pause_when=%~2"
+    ) else if /i "%switch%" == "env" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
+        call:SetEnv "%~2" || exit /b
     ) else if /i "%switch%" == "nocolor" (
         set "clrRed="
         set "clrGrn="
@@ -249,6 +284,16 @@ if defined VEB_BUILD_MODULE (
 @echo   ^|     pause_when:         %pause_when%
 @echo   ^|     interactive:        %interactive%
 @echo   ==========================================================================
+if defined makeveb_envs (
+@echo   ^| Additional environment variables:
+:iterate_envs
+for /f "tokens=1* delims=|" %%a in ("%makeveb_envs%") do (
+@echo   ^|     %%~a
+set "makeveb_envs=%%~b"
+)
+if defined makeveb_envs (goto iterate_envs)
+@echo   ==========================================================================
+)
 @echo;
 exit /b
 ::ConfigurationStatus
@@ -269,6 +314,7 @@ call:Version
 @echo     makeveb.bat /version
 @echo     makeveb.bat [^<make_target^>] [/V ^<VEB^>] [/M ^<VEB_BUILD_MODULE^>] [/W ^<workdir^>] [/L ^<log^>] [/T ^<TOOLS_DIR^>]
 @echo                 [/E ^<EWDK_DIR^>] [/P ^<pause_when^>] [/color ^| /nocolor] [/interactive ^| /nointeractive]
+@echo                 [/env "<environment_variable>=<value>" [/env "<another_variable>=<another_value>" [...]]]
 @echo;
 @echo make_target:
 @echo     Target to make. If not specified, setup build environment only.
@@ -292,6 +338,9 @@ call:Version
 @echo     in this mode. This is the default.
 @echo /nointeractive:
 @echo     Specify current shell is an non-interactive one, makeveb won't block keyboard interactions in this mode.
+@echo /env
+@echo     Specify environment variable.  Can be used multiple times.  No space is permitted at either side of `='.
+@echo     Note that the quotation marks are required.
 exit /b
 ::Usage
 
@@ -322,3 +371,18 @@ goto printc_line
 @echo Try "makeveb /?" for help.
 @exit /b
 ::UsagePrompt
+
+:SetEnv
+if "%~1" == "" (exit /b 0)
+set "SetEnv_Statement=%~1"
+for /f "delims==" %%A in ("%SetEnv_Statement%") do (
+    if "%%~A" == "%SetEnv_Statement%" (
+        >&2 call:Printc r "error: couldn't find `=' in `%SetEnv_Statement%'"
+        >&2 call:Printc y "Did you forget the quotation marks?"
+        exit /b 1
+    )
+)
+set "makeveb_envs=%makeveb_envs%%SetEnv_Statement%|"
+set "%SetEnv_Statement%"
+exit /b
+::SetEnv
