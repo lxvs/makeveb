@@ -31,8 +31,8 @@ exit /b
 ::SetDefaults
 
 :SetMetaInfo
-set "makeveb_version=2.7.2"
-set "makeveb_date=2022-09-09"
+set "makeveb_version=2.8.0"
+set "makeveb_date=2023-06-21"
 set "makeveb_link=https://gitlab.com/lzhh/makeveb"
 set "makeveb_tee=%~dp0..\tee.exe"
 set "makeveb_tail=%~dp0..\tail.exe"
