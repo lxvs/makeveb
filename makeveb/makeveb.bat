@@ -34,6 +34,7 @@ exit /b
 ::SetMetaInfo
 
 :SetColors
+if "%MAKEVEB_COLOR%" == "0" (exit /b)
 set "clrRed=[91m"
 set "clrGrn=[92m"
 set "clrYlw=[93m"
@@ -289,13 +290,14 @@ call:Version
 @echo     /p MAKEVEB_PAUSE_WHEN
 @echo         Available options are `always', `never', `successful' and `failed'. Default is `always'.
 @echo     /color
-@echo         Enable colored output, this is the default.
+@echo         Enable colored output, this is the default.  Can also be specified by setting `MAKEVEB_COLOR' to `1' ^(or any
+@echo          non-zero values^).
 @echo     /nocolor
-@echo         Disable colored output.
+@echo         Disable colored output.  Can also be specified by setting `MAKEVEB_COLOR' to `0'.
 @echo     /interactive
 @echo         Specify current shell is interactive.  In this case, makeveb will positively block keyboard interactions ^(such
 @echo          as pauses^) in this mode.  This is the default.  Can also be specified by setting `MAKEVEB_INTERACTIVE_SHELL'
-@echo          to `1'.
+@echo          to `1' ^(or any non-zero values^).
 @echo     /nointeractive
 @echo         Specify current shell is non-interactive.  Can also be specified by setting `MAKEVEB_INTERACTIVE_SHELL' to `0'.
 @echo     /env "<environment_variable>=<value>"
