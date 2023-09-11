@@ -8,7 +8,6 @@ title makeveb %makeveb_version%
 if "%~1" == "/?" goto Usage
 call:ParseArgs %* || exit /b
 call:AssignDefaults
-call:ValidateDirs || exit /b
 call:ValidateWorkdir || exit /b
 pushd "%workdir%"
 set "workdir=%cd%"
@@ -164,32 +163,6 @@ if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
 if not defined interactive set "interactive=%DEFAULT_INTERACTIVE%"
 exit /b
 ::AssignDefaults
-
-:ValidateDirs
-if not defined TOOLS_DIR (
-    >&2 call:Printc r "makeveb: error: TOOLS_DIR is not defined."
-    >&2 call:UsagePrompt
-    exit /b 1
-) else (
-    if not exist "%TOOLS_DIR%" (
-        >&2 call:Printc r "makeveb: error: defined TOOLS_DIR does not exist." "    TOOLS_DIR = %TOOLS_DIR%"
-        >&2 call:UsagePrompt
-        exit /b 1
-    )
-)
-if not defined EWDK_DIR (
-    >&2 call:Printc r "makeveb: error: EWDK_DIR is not defined."
-    >&2 call:UsagePrompt
-    exit /b 1
-) else (
-    if not exist "%EWDK_DIR%" (
-        >&2 call:Printc r "makeveb: error: defined EWDK_DIR does not exist." "    EWDK_DIR = %EWDK_DIR%"
-        >&2 call:UsagePrompt
-        exit /b 1
-    )
-)
-exit /b 0
-::ValidateDirs
 
 :ValidateWorkdir
 if exist "%workdir%" exit /b 0
