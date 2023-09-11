@@ -7,10 +7,9 @@ call:SetColors
 title makeveb %makeveb_version%
 if "%~1" == "/?" goto Usage
 call:ParseArgs %* || exit /b
-call:AssignDefaults
 call:ValidateWorkdir || exit /b
-pushd "%workdir%"
-set "workdir=%cd%"
+pushd "%MAKEVEB_WORKSPACE%"
+set "MAKEVEB_WORKSPACE=%cd%"
 call:ConfigurationStatus
 call:IfPrompt && exit /b
 call:BuildStart
@@ -18,14 +17,9 @@ popd
 exit /b %errCode%
 
 :SetDefaults
-if not defined DEFAULT_VEB set "DEFAULT_VEB="
-if not defined DEFAULT_VEB_BUILD_MODULE set "DEFAULT_VEB_BUILD_MODULE="
-if not defined DEFAULT_WORKDIR set "DEFAULT_WORKDIR=%cd%"
-if not defined DEFAULT_LOG_FILE set "DEFAULT_LOG_FILE=nul"
-if not defined DEFAULT_TOOLS_DIR set "DEFAULT_TOOLS_DIR="
-if not defined DEFAULT_EWDK_DIR set "DEFAULT_EWDK_DIR=C:\EWDK_1703"
-if not defined DEFAULT_PAUSE_WHEN set "DEFAULT_PAUSE_WHEN=always"
-if not defined DEFAULT_INTERACTIVE set "DEFAULT_INTERACTIVE=1"
+if not defined MAKEVEB_LOG_FILENAME (set "MAKEVEB_LOG_FILENAME=nul")
+if not defined MAKEVEB_PAUSE_WHEN (set "MAKEVEB_PAUSE_WHEN=always")
+if not defined MAKEVEB_INTERACTIVE_SHELL (set "MAKEVEB_INTERACTIVE_SHELL=1")
 exit /b
 ::SetDefaults
 
@@ -69,13 +63,13 @@ if "%param:~0,1%" == "/" (
             >&2 call:Printc r "error: switch `%switch%' requires a value"
             exit /b 1
         )
-        set "workdir=%~2"
+        set "MAKEVEB_WORKSPACE=%~2"
     ) else if /i "%switch%" == "L" (
         if %2. == . (
             >&2 call:Printc r "error: switch `%switch%' requires a value"
             exit /b 1
         )
-        set "log=%~2"
+        set "MAKEVEB_LOG_FILENAME=%~2"
     ) else if /i "%switch%" == "T" (
         if %2. == . (
             >&2 call:Printc r "error: switch `%switch%' requires a value"
@@ -93,7 +87,7 @@ if "%param:~0,1%" == "/" (
             >&2 call:Printc r "error: switch `%switch%' requires a value"
             exit /b 1
         )
-        set "pause_when=%~2"
+        set "MAKEVEB_PAUSE_WHEN=%~2"
     ) else if /i "%switch%" == "env" (
         if %2. == . (
             >&2 call:Printc r "error: switch `%switch%' requires a value"
@@ -112,15 +106,15 @@ if "%param:~0,1%" == "/" (
         shift
         goto ParseArgs
     ) else if /i "%switch%" == "nointeractive" (
-        set interactive=0
+        set MAKEVEB_INTERACTIVE_SHELL=0
         shift
         goto ParseArgs
     ) else if /i "%switch%" == "noninteractive" (
-        set interactive=0
+        set MAKEVEB_INTERACTIVE_SHELL=0
         shift
         goto ParseArgs
     ) else if /i "%switch%" == "interactive" (
-        set interactive=1
+        set MAKEVEB_INTERACTIVE_SHELL=1
         shift
         goto ParseArgs
     ) else if /i "%switch%" == "help" (
@@ -138,8 +132,8 @@ if "%param:~0,1%" == "/" (
     shift
     goto ParseArgs
 ) else (
-    if "%make_target%" == "" (
-        set "make_target=%param%"
+    if "%MAKEVEB_TARGET%" == "" (
+        set "MAKEVEB_TARGET=%param%"
         shift
         goto ParseArgs
     ) else (
@@ -151,27 +145,15 @@ if "%param:~0,1%" == "/" (
 exit /b
 ::ParseArgs
 
-:AssignDefaults
-if not defined VEB if exist "%workdir%\%DEFAULT_VEB%" set "VEB=%DEFAULT_VEB%"
-if not defined VEB_BUILD_MODULE set "VEB_BUILD_MODULE=%DEFAULT_VEB_BUILD_MODULE%"
-if not defined workdir set "workdir=%DEFAULT_WORKDIR%"
-if not defined log set "log=%DEFAULT_LOG_FILE%"
-if not defined log set "log=nul"
-if not defined TOOLS_DIR set "TOOLS_DIR=%DEFAULT_TOOLS_DIR%"
-if not defined EWDK_DIR set "EWDK_DIR=%DEFAULT_EWDK_DIR%"
-if not defined pause_when set "pause_when=%DEFAULT_PAUSE_WHEN%"
-if not defined interactive set "interactive=%DEFAULT_INTERACTIVE%"
-exit /b
-::AssignDefaults
-
 :ValidateWorkdir
-if exist "%workdir%" exit /b 0
->&2 call:Printc r "makeveb: error: nonexistent working directory: %workdir%"
+if not defined MAKEVEB_WORKSPACE (set "MAKEVEB_WORKSPACE=%cd%")
+if exist "%MAKEVEB_WORKSPACE%" (exit /b 0)
+>&2 call:Printc r "makeveb: error: MAKEVEB_WORKSPACE does not exists: `%MAKEVEB_WORKSPACE%'"
 exit /b 1
 ::ValidateWorkdir
 
 :IfPrompt
-if "%make_target%" == "" (
+if "%MAKEVEB_TARGET%" == "" (
     if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
     title makeveb %makeveb_version% Command Prompt
     prompt %clrGrn%MAKEVEB$S%makeveb_version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
@@ -183,24 +165,24 @@ exit /b 1
 ::IfPrompt
 
 :BuildStart
-@call:Printc y "makeveb: target: %make_target%"
-title makeveb %makeveb_version% - %make_target%
-if "%interactive%" == "0" (
-    if /i "%log%" == "nul" (
-        "%TOOLS_DIR%\make.exe" %make_target%
+@call:Printc y "makeveb: target: %MAKEVEB_TARGET%"
+title makeveb %makeveb_version% - %MAKEVEB_TARGET%
+if "%MAKEVEB_INTERACTIVE_SHELL%" == "0" (
+    if /i "%MAKEVEB_LOG_FILENAME%" == "nul" (
+        "%TOOLS_DIR%\make.exe" %MAKEVEB_TARGET%
     ) else (
-        "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %makeveb_tee% %log%
+        "%TOOLS_DIR%\make.exe" %MAKEVEB_TARGET% 2>&1 | %makeveb_tee% %MAKEVEB_LOG_FILENAME%
     )
 ) else (
-    if /i "%log%" == "nul" (
-        echo;| "%TOOLS_DIR%\make.exe" %make_target%
+    if /i "%MAKEVEB_LOG_FILENAME%" == "nul" (
+        echo;| "%TOOLS_DIR%\make.exe" %MAKEVEB_TARGET%
     ) else (
-        echo;| "%TOOLS_DIR%\make.exe" %make_target% 2>&1 | %makeveb_tee% %log%
+        echo;| "%TOOLS_DIR%\make.exe" %MAKEVEB_TARGET% 2>&1 | %makeveb_tee% %MAKEVEB_LOG_FILENAME%
     )
 )
 set "errCode=%ErrorLevel%"
 @echo;
-call:GetResults "%log%"
+call:GetResults "%MAKEVEB_LOG_FILENAME%"
 call:ShowResults
 exit /b
 ::BuildStart
@@ -208,7 +190,7 @@ exit /b
 :GetResults
 if /i "%~1" == "nul" exit /b %errCode%
 set errCode=1
-for /f "delims=" %%i in ('%makeveb_tail% --lines=3 %log%') do (
+for /f "delims=" %%i in ('%makeveb_tail% --lines=3 %MAKEVEB_LOG_FILENAME%') do (
     if /i "%%~i" == "All output modules were successfully built." (
         set errCode=0
         exit /b %errCode%
@@ -219,19 +201,19 @@ exit /b %errCode%
 
 :ShowResults
 if %errCode% EQU 0 (
-    title Finished: makeveb %makeveb_version% - %make_target%
-    if /i "%pause_when%" == "always" (
+    title Finished: makeveb %makeveb_version% - %MAKEVEB_TARGET%
+    if /i "%MAKEVEB_PAUSE_WHEN%" == "always" (
         pause
-    ) else if /i "%pause_when%" == "successful" (
+    ) else if /i "%MAKEVEB_PAUSE_WHEN%" == "successful" (
         pause
     )
 ) else (
-    title failed: makeveb %makeveb_version% - %make_target%
-    >&2 call:Printc r "makeveb: failed to make %make_target%"
+    title failed: makeveb %makeveb_version% - %MAKEVEB_TARGET%
+    >&2 call:Printc r "makeveb: failed to make %MAKEVEB_TARGET%"
     >&2 call:Printc r "error code: %errCode%"
-    if /i "%pause_when%" == "always" (
+    if /i "%MAKEVEB_PAUSE_WHEN%" == "always" (
         pause
-    ) else if /i "%pause_when%" == "failed" (
+    ) else if /i "%MAKEVEB_PAUSE_WHEN%" == "failed" (
         pause
     )
 )
@@ -246,16 +228,16 @@ exit /b %errCode%
 @echo   ^| %makeveb_link%
 @echo   ==========================================================================
 @echo   ^| Current configurations:
-@echo   ^|     VEB:                %VEB%
+@echo   ^|     VEB:                    %VEB%
 if defined VEB_BUILD_MODULE (
-@echo   ^|     VEB_BUILD_MODULE:   %VEB_BUILD_MODULE%
+@echo   ^|     VEB_BUILD_MODULE:       %VEB_BUILD_MODULE%
 )
-@echo   ^|     workdir:            %workdir%
-@echo   ^|     log:                %log%
-@echo   ^|     TOOLS_DIR:          %TOOLS_DIR%
-@echo   ^|     EWDK_DIR:           %EWDK_DIR%
-@echo   ^|     pause_when:         %pause_when%
-@echo   ^|     interactive:        %interactive%
+@echo   ^|     TOOLS_DIR:              %TOOLS_DIR%
+@echo   ^|     EWDK_DIR:               %EWDK_DIR%
+@echo   ^|     MAKEVEB_WORKSPACE:      %MAKEVEB_WORKSPACE%
+@echo   ^|     MAKEVEB_LOG_FILENAME:   %MAKEVEB_LOG_FILENAME%
+@echo   ^|     MAKEVEB_PAUSE_WHEN:     %MAKEVEB_PAUSE_WHEN%
+@echo   ^|     MAKEVEB_INTERACTIVE_SHELL: %MAKEVEB_INTERACTIVE_SHELL%
 @echo   ==========================================================================
 if defined makeveb_envs (
 @echo   ^| Additional environment variables:
@@ -285,35 +267,40 @@ call:Version
 @echo usage:
 @echo     makeveb.bat /? ^| /help
 @echo     makeveb.bat /version
-@echo     makeveb.bat [^<make_target^>] [/V ^<VEB^>] [/M ^<VEB_BUILD_MODULE^>] [/W ^<workdir^>] [/L ^<log^>] [/T ^<TOOLS_DIR^>]
-@echo                 [/E ^<EWDK_DIR^>] [/P ^<pause_when^>] [/color ^| /nocolor] [/interactive ^| /nointeractive]
-@echo                 [/env "<environment_variable>=<value>" [/env "<another_variable>=<another_value>" [...]]]
+@echo     makeveb.bat [^<MAKEVEB_TARGET^>] [^<options^> ...]
 @echo;
-@echo make_target:
+@echo MAKEVEB_TARGET:
 @echo     Target to make. If not specified, setup build environment only.
-@echo VEB:
-@echo     VEB file ^(without ".veb" extention^).
-@echo VEB_BUILD_MODULE:
-@echo     Module to build. If not specified, build all modules.
-@echo workdir:
-@echo     If not specified, will be current directory.
-@echo log:
-@echo     Build log filename, default is build.log. If 'nul' is specified, only write in console.
-@echo     Note that to get a reliable exit code you need to set log to 'nul'.
-@echo pause_when:
-@echo     Available options: always, never, successful, failed. Default is "always".
-@echo /color:
-@echo     Enable colored output, this is the default.
-@echo /nocolor:
-@echo     Disable colored output.
-@echo /interactive:
-@echo     Specify current shell is an interactive one, makeveb will positively block keyboard interactions ^(such as pauses^)
-@echo     in this mode. This is the default.
-@echo /nointeractive:
-@echo     Specify current shell is an non-interactive one, makeveb won't block keyboard interactions in this mode.
-@echo /env
-@echo     Specify environment variable.  Can be used multiple times.  No space is permitted at either side of `='.
-@echo     Note that the quotation marks are required.
+@echo;
+@echo Options:
+@echo     /v VEB
+@echo         Specify VEB file ^(without `.veb' extention^).
+@echo     /m VEB_BUILD_MODULE
+@echo         Specify Module to build. If not specified, build all modules.
+@echo     /t TOOLS_DIR
+@echo         Specify path to TOOLS_DIR.  It'll be added to Path before building.
+@echo     /e EWDK_DIR
+@echo         Specify path to EWDK_DIR.
+@echo     /w MAKEVEB_WORKSPACE
+@echo         Specify the path to the source code directory.  If not specified, will be current directory.
+@echo     /l MAKEVEB_LOG_FILENAME
+@echo         Build log filename, default is `build.log'. If `nul' is specified, only write in console.
+@echo          Note that to get a reliable exit code you need to set MAKEVEB_LOG_FILENAME to `nul'.
+@echo     /p MAKEVEB_PAUSE_WHEN
+@echo         Available options are `always', `never', `successful' and `failed'. Default is `always'.
+@echo     /color
+@echo         Enable colored output, this is the default.
+@echo     /nocolor
+@echo         Disable colored output.
+@echo     /interactive
+@echo         Specify current shell is interactive.  In this case, makeveb will positively block keyboard interactions ^(such
+@echo          as pauses^) in this mode.  This is the default.  Can also be specified by setting `MAKEVEB_INTERACTIVE_SHELL'
+@echo          to `1'.
+@echo     /nointeractive
+@echo         Specify current shell is non-interactive.  Can also be specified by setting `MAKEVEB_INTERACTIVE_SHELL' to `0'.
+@echo     /env "<environment_variable>=<value>"
+@echo         Specify environment variable.  Can be used multiple times.  No space is permitted at either side of `='.
+@echo          Note that the quotation marks are required.
 exit /b
 ::Usage
 
