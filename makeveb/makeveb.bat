@@ -301,7 +301,7 @@ exit /b
 :Version
 @echo;
 @echo     makeveb %makeveb_version% ^(%makeveb_date%^)
-@echo     Liu, Zhao-hui ^<liuzhaohui@inspur.com^>
+@echo     Liu, Zhao-hui ^<liuzhaohui@ieisystem.com^>
 @echo     %makeveb_link%
 exit /b
 ::Version
