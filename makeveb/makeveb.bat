@@ -154,15 +154,13 @@ exit /b 1
 ::ValidateWorkdir
 
 :IfPrompt
-if "%MAKEVEB_TARGET%" == "" (
-    if defined TOOLS_DIR set "PATH=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%PATH%"
-    title makeveb %makeveb_version% Command Prompt
-    prompt %clrGrn%MAKEVEB$S%makeveb_version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
-    cmd /k
-    popd
-    exit /b 0
-)
-exit /b 1
+if defined TOOLS_DIR (set "Path=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%Path%")
+if "%MAKEVEB_TARGET%" NEQ "" (exit /b 1)
+title makeveb %makeveb_version% Command Prompt
+prompt %clrGrn%MAKEVEB$S%makeveb_version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
+cmd /k
+popd
+exit /b 0
 ::IfPrompt
 
 :BuildStart
@@ -233,14 +231,18 @@ exit /b %errCode%
 if defined VEB_BUILD_MODULE (
 @echo   ^|     VEB_BUILD_MODULE:       %VEB_BUILD_MODULE%
 )
+if defined TOOLS_DIR (
 @echo   ^|     TOOLS_DIR:              %TOOLS_DIR%
+)
+if defined EWDK_DIR (
 @echo   ^|     EWDK_DIR:               %EWDK_DIR%
+)
 @echo   ^|     MAKEVEB_WORKSPACE:      %MAKEVEB_WORKSPACE%
 @echo   ^|     MAKEVEB_LOG_FILENAME:   %MAKEVEB_LOG_FILENAME%
 @echo   ^|     MAKEVEB_PAUSE_WHEN:     %MAKEVEB_PAUSE_WHEN%
 @echo   ^|     MAKEVEB_INTERACTIVE_SHELL: %MAKEVEB_INTERACTIVE_SHELL%
-@echo   ==========================================================================
 if defined makeveb_envs (
+@echo   ==========================================================================
 @echo   ^| Additional environment variables:
 :iterate_envs
 for /f "tokens=1* delims=|" %%a in ("%makeveb_envs%") do (
@@ -248,8 +250,8 @@ for /f "tokens=1* delims=|" %%a in ("%makeveb_envs%") do (
 set "makeveb_envs=%%~b"
 )
 if defined makeveb_envs (goto iterate_envs)
-@echo   ==========================================================================
 )
+@echo   ==========================================================================
 @echo;
 exit /b
 ::ConfigurationStatus
