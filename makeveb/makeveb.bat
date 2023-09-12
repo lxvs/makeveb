@@ -10,8 +10,8 @@ call:ParseArgs %* || exit /b
 call:ValidateWorkdir || exit /b
 pushd "%MAKEVEB_WORKSPACE%"
 set "MAKEVEB_WORKSPACE=%cd%"
-call:ConfigurationStatus
 call:IfPrompt && exit /b
+call:ConfigurationStatus
 call:BuildStart
 popd
 exit /b %errCode%
@@ -89,6 +89,12 @@ if "%param:~0,1%" == "/" (
             exit /b 1
         )
         set "MAKEVEB_PAUSE_WHEN=%~2"
+    ) else if /i "%switch%" == "winddk" (
+        if %2. == . (
+            >&2 call:Printc r "error: switch `%switch%' requires a value"
+            exit /b 1
+        )
+        set "WINDDK_DIR=%~2"
     ) else if /i "%switch%" == "env" (
         if %2. == . (
             >&2 call:Printc r "error: switch `%switch%' requires a value"
@@ -155,6 +161,11 @@ exit /b 1
 
 :IfPrompt
 if defined TOOLS_DIR (set "Path=%TOOLS_DIR%;%TOOLS_DIR%\Bin\Win32;%Path%")
+if defined WINDDK_DIR (
+    set "CCX86DIR=%WINDDK_DIR%\x86"
+    set "CCX64DIR=%WINDDK_DIR%\amd64"
+    set "Path=%WINDDK_DIR%\x86;%WINDDK_DIR%\amd64;%WINDDK_DIR%;%Path%"
+)
 if "%MAKEVEB_TARGET%" NEQ "" (exit /b 1)
 title makeveb %makeveb_version% Command Prompt
 prompt %clrGrn%MAKEVEB$S%makeveb_version%%clrSuf%$S%clrYlw%$P%clrSuf%$_$+$G$S
@@ -237,6 +248,11 @@ if defined TOOLS_DIR (
 if defined EWDK_DIR (
 @echo   ^|     EWDK_DIR:               %EWDK_DIR%
 )
+if defined WINDDK_DIR (
+@echo   ^|     WINDDK_DIR:             %WINDDK_DIR%
+@echo   ^|     CCX86DIR:               %CCX86DIR%
+@echo   ^|     CCX64DIR:               %CCX64DIR%
+)
 @echo   ^|     MAKEVEB_WORKSPACE:      %MAKEVEB_WORKSPACE%
 @echo   ^|     MAKEVEB_LOG_FILENAME:   %MAKEVEB_LOG_FILENAME%
 @echo   ^|     MAKEVEB_PAUSE_WHEN:     %MAKEVEB_PAUSE_WHEN%
@@ -284,6 +300,8 @@ call:Version
 @echo         Specify path to TOOLS_DIR.  It'll be added to Path before building.
 @echo     /e EWDK_DIR
 @echo         Specify path to EWDK_DIR.
+@echo     /winddk WINDDK_DIR
+@echo         Specify path to WINDDK_DIR.  It'll be added to Path, along with CCX86DIR and CCX64DIR, before building.
 @echo     /w MAKEVEB_WORKSPACE
 @echo         Specify the path to the source code directory.  If not specified, will be current directory.
 @echo     /l MAKEVEB_LOG_FILENAME
